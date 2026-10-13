@@ -1,0 +1,138 @@
+@model InicioViewModel
+@{
+    Layout = "_LayoutPaciente";
+    ViewData["Title"] = "Inicio";
+
+    var primerNombre = Model.NombrePaciente.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "";
+    var cita = Model.ProximaCita;
+    string? faltan = null;
+    if (cita != null)
+    {
+        var dias = (cita.Fecha.Date - DateTime.Today).Days;
+        faltan = dias switch
+        {
+            0 => "Es hoy",
+            1 => "Mañana",
+            _ => $"En {dias} días"
+        };
+    }
+    var cantidadFacturas = Model.FacturasPendientes.Count;
+}
+
+<section class="bienvenida">
+    <div>
+        <p class="fecha-hoy">@DateTime.Today.ToString("dddd, d 'de' MMMM")</p>
+        <h1>Hola, @primerNombre</h1>
+    </div>
+    <a asp-controller="Citas" asp-action="Agendar" class="btn btn-primario">
+        <svg class="icono" aria-hidden="true"><use href="#i-mas" /></svg>
+        Agendar cita
+    </a>
+</section>
+
+<div class="inicio-grid">
+    @if (cita != null)
+    {
+        <section class="boleto" aria-labelledby="titulo-proxima">
+            <div class="boleto-talon">
+                <span class="boleto-dia-semana">@cita.Fecha.ToString("dddd")</span>
+                <span class="boleto-dia">@cita.Fecha.ToString("dd")</span>
+                <span class="boleto-mes">@cita.Fecha.ToString("MMMM")</span>
+            </div>
+            <div class="boleto-cuerpo">
+                <div class="boleto-cabeza">
+                    <h2 id="titulo-proxima">Tu próxima cita</h2>
+                    <span class="cuenta-regresiva">@faltan</span>
+                </div>
+                <p class="boleto-hora">@cita.Hora</p>
+                <p class="boleto-medico">@cita.MedicoNombre</p>
+                <p class="boleto-detalle">@cita.Especialidad</p>
+                @if (!string.IsNullOrWhiteSpace(cita.Motivo))
+                {
+                    <p class="boleto-detalle">Motivo: @cita.Motivo</p>
+                }
+                <div class="boleto-acciones">
+                    <a asp-controller="Citas" asp-action="Index" class="btn btn-secundario btn-chico">
+                        @(Model.CitasProximas > 1 ? $"Ver mis {Model.CitasProximas} citas" : "Ver mis citas")
+                    </a>
+                </div>
+            </div>
+        </section>
+    }
+    else
+    {
+        <section class="boleto boleto-vacio">
+            <div class="boleto-cuerpo">
+                <span class="vacio-icono"><svg class="icono" aria-hidden="true"><use href="#i-calendario" /></svg></span>
+                <h2>No tienes citas por delante</h2>
+                <p class="boleto-detalle">Elige médico, día y hora. Te toma menos de un minuto.</p>
+                <div class="boleto-acciones">
+                    <a asp-controller="Citas" asp-action="Agendar" class="btn btn-primario">Agendar mi cita</a>
+                </div>
+            </div>
+        </section>
+    }
+
+    <section class="panel pendientes" aria-labelledby="titulo-pendientes">
+        <h2 id="titulo-pendientes">Lo que tienes pendiente</h2>
+        <ul class="pendientes-lista">
+            @if (cantidadFacturas > 0)
+            {
+                <li>
+                    <a class="pendiente" asp-controller="Facturas" asp-action="Index">
+                        <span class="pendiente-icono ambar"><svg class="icono" aria-hidden="true"><use href="#i-factura" /></svg></span>
+                        <span>
+                            <strong>@(cantidadFacturas == 1 ? "1 factura por pagar" : $"{cantidadFacturas} facturas por pagar")</strong>
+                            <span class="pendiente-sub">RD$ @Model.TotalPendiente.ToString("N2") en total</span>
+                        </span>
+                        <svg class="icono" aria-hidden="true"><use href="#i-chevron" /></svg>
+                    </a>
+                </li>
+            }
+            @if (Model.ResultadosListos > 0)
+            {
+                <li>
+                    <a class="pendiente" asp-controller="Resultados" asp-action="Index">
+                        <span class="pendiente-icono verde"><svg class="icono" aria-hidden="true"><use href="#i-matraz" /></svg></span>
+                        <span>
+                            <strong>@(Model.ResultadosListos == 1 ? "1 análisis listo" : $"{Model.ResultadosListos} análisis listos")</strong>
+                            <span class="pendiente-sub">Revísalos con tu médico en la próxima consulta.</span>
+                        </span>
+                        <svg class="icono" aria-hidden="true"><use href="#i-chevron" /></svg>
+                    </a>
+                </li>
+            }
+            @if (Model.ResultadosPendientes > 0)
+            {
+                <li>
+                    <a class="pendiente" asp-controller="Resultados" asp-action="Index">
+                        <span class="pendiente-icono"><svg class="icono" aria-hidden="true"><use href="#i-reloj" /></svg></span>
+                        <span>
+                            <strong>@(Model.ResultadosPendientes == 1 ? "1 análisis en proceso" : $"{Model.ResultadosPendientes} análisis en proceso")</strong>
+                            <span class="pendiente-sub">Te avisamos aquí cuando estén listos.</span>
+                        </span>
+                        <svg class="icono" aria-hidden="true"><use href="#i-chevron" /></svg>
+                    </a>
+                </li>
+            }
+            @if (cantidadFacturas == 0 && Model.ResultadosListos == 0 && Model.ResultadosPendientes == 0)
+            {
+                <li>
+                    <div class="pendiente">
+                        <span class="pendiente-icono verde"><svg class="icono" aria-hidden="true"><use href="#i-check" /></svg></span>
+                        <span>
+                            <strong>Estás al día</strong>
+                            <span class="pendiente-sub">No tienes pagos ni análisis pendientes.</span>
+                        </span>
+                        <span></span>
+                    </div>
+                </li>
+            }
+        </ul>
+    </section>
+</div>
+
+<p class="nota nota-info inicio-nota">
+    <svg class="icono" aria-hidden="true"><use href="#i-escudo" /></svg>
+    <span>Por tu privacidad, este portal no muestra valores clínicos como carga viral o CD4. Tu médico los revisa contigo en consulta.</span>
+</p>

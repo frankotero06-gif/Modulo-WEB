@@ -1,0 +1,88 @@
+@model List<FacturaDto>
+@{
+    Layout = "_LayoutPaciente";
+    ViewData["Title"] = "Facturas";
+
+    var pendientes = Model.Where(f => f.Estado != "Pagada").ToList();
+    var totalPendiente = pendientes.Sum(f => f.Monto);
+}
+
+<div class="cabecera">
+    <div>
+        <h1 class="titulo-pagina">Mis facturas</h1>
+        <p class="bajada">Paga en línea tus consultas y descarga el comprobante. Los tratamientos antirretrovirales están cubiertos al 100% por el Estado.</p>
+    </div>
+</div>
+
+@if (pendientes.Count > 0)
+{
+    <div class="total-pendiente">
+        <div>
+            <p>@(pendientes.Count == 1 ? "Tienes 1 factura por pagar" : $"Tienes {pendientes.Count} facturas por pagar")</p>
+            <strong>RD$ @totalPendiente.ToString("N2")</strong>
+        </div>
+        @if (pendientes.Count == 1)
+        {
+            <a asp-controller="Facturas" asp-action="Pagar" asp-route-id="@pendientes[0].Id" class="btn btn-primario">
+                <svg class="icono" aria-hidden="true"><use href="#i-tarjeta" /></svg>
+                Pagar ahora
+            </a>
+        }
+    </div>
+}
+
+@if (!Model.Any())
+{
+    <div class="panel vacio">
+        <span class="vacio-icono"><svg class="icono" aria-hidden="true"><use href="#i-factura" /></svg></span>
+        <h2>No tienes facturas</h2>
+        <p>Cuando se te facture un servicio, aparecerá aquí para que lo pagues o descargues el comprobante.</p>
+    </div>
+}
+else
+{
+    <ul class="panel lista">
+        @foreach (var factura in Model)
+        {
+            var pagada = factura.Estado == "Pagada";
+            <li class="fila">
+                <span class="fecha-chip" aria-hidden="true">
+                    <b>@factura.Fecha.ToString("dd")</b>
+                    <span>@factura.Fecha.ToString("MMM").TrimEnd('.')</span>
+                </span>
+                <div>
+                    <p class="fila-titulo">@factura.Concepto</p>
+                    <p class="fila-meta">
+                        <span class="estado @(pagada ? "estado-ok" : "estado-pendiente")">@(pagada ? "Pagada" : "Por pagar")</span>
+                        @if (factura.EsSubsidiada)
+                        {
+                            <span><svg class="icono" aria-hidden="true"><use href="#i-escudo" /></svg> Cubierto al 100% por subsidio estatal</span>
+                        }
+                        else if (pagada && factura.NumeroFactura != null)
+                        {
+                            <span><svg class="icono" aria-hidden="true"><use href="#i-factura" /></svg> @factura.NumeroFactura</span>
+                        }
+                        else
+                        {
+                            <span><svg class="icono" aria-hidden="true"><use href="#i-calendario" /></svg> Servicio del @factura.Fecha.ToString("d 'de' MMMM")</span>
+                        }
+                    </p>
+                </div>
+                <div class="fila-acciones">
+                    <span class="monto @(factura.Monto == 0 ? "monto-cero" : "")">RD$ @factura.Monto.ToString("N2")</span>
+                    @if (pagada)
+                    {
+                        <a asp-controller="Facturas" asp-action="Comprobante" asp-route-id="@factura.Id" class="btn btn-secundario btn-chico">
+                            <svg class="icono" aria-hidden="true"><use href="#i-factura" /></svg>
+                            Ver comprobante
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Facturas" asp-action="Pagar" asp-route-id="@factura.Id" class="btn btn-primario btn-chico">Pagar</a>
+                    }
+                </div>
+            </li>
+        }
+    </ul>
+}

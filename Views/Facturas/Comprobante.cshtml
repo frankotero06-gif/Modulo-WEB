@@ -1,0 +1,83 @@
+@model FacturaDto
+@{
+    Layout = "_LayoutPaciente";
+    ViewData["Title"] = "Comprobante " + Model.NumeroFactura;
+}
+
+<div class="no-imprimir">
+    <a asp-controller="Facturas" asp-action="Index" class="volver">
+        <svg class="icono" aria-hidden="true"><use href="#i-atras" /></svg>
+        Mis facturas
+    </a>
+
+    <div class="cabecera">
+        <div>
+            <h1 class="titulo-pagina">Comprobante de pago</h1>
+            <p class="bajada">Tu recibo y tu factura se generan juntos. Descárgalo en PDF o imprímelo.</p>
+        </div>
+        <div class="comprobante-acciones">
+            <a asp-controller="Facturas" asp-action="ComprobantePdf" asp-route-id="@Model.Id" class="btn btn-primario" download>
+                <svg class="icono" aria-hidden="true"><use href="#i-descargar" /></svg>
+                Descargar PDF
+            </a>
+            <button type="button" class="btn btn-secundario" onclick="window.print()">
+                <svg class="icono" aria-hidden="true"><use href="#i-imprimir" /></svg>
+                Imprimir
+            </button>
+        </div>
+    </div>
+</div>
+
+<article class="recibo">
+    <header class="recibo-cabeza">
+        <div class="marca">
+            <svg class="marca-lazo" aria-hidden="true"><use href="#i-lazo" /></svg>
+            <span class="marca-texto">
+                <strong>CONAVIHSIDA</strong>
+                <span>Consejo Nacional para el VIH y el SIDA</span>
+            </span>
+        </div>
+        <span class="recibo-sello" aria-hidden="true"><svg class="icono"><use href="#i-check" /></svg></span>
+        <h2>Pago completado</h2>
+        <p class="recibo-total">RD$ @Model.Monto.ToString("N2")</p>
+    </header>
+
+    <div class="recibo-numeros">
+        <div>
+            <span class="recibo-etiqueta">Número de recibo</span>
+            <span class="recibo-valor">@Model.NumeroRecibo</span>
+        </div>
+        <div>
+            <span class="recibo-etiqueta">Número de factura</span>
+            <span class="recibo-valor">@Model.NumeroFactura</span>
+        </div>
+    </div>
+
+    <table class="recibo-tabla">
+        <tr>
+            <th scope="row">Concepto</th>
+            <td>@Model.Concepto</td>
+        </tr>
+        <tr>
+            <th scope="row">Fecha del servicio</th>
+            <td>@Model.Fecha.ToString("d 'de' MMMM yyyy")</td>
+        </tr>
+        <tr>
+            <th scope="row">Fecha de pago</th>
+            <td>@(Model.FechaPago?.ToString("d 'de' MMMM yyyy, h:mm tt"))</td>
+        </tr>
+        <tr>
+            <th scope="row">Cobertura</th>
+            <td>@(Model.EsSubsidiada ? "Subsidio estatal 100%" : "Pago del paciente")</td>
+        </tr>
+        <tr>
+            <th scope="row">Total</th>
+            <td>RD$ @Model.Monto.ToString("N2")</td>
+        </tr>
+    </table>
+
+    <p class="recibo-legal">
+        Este documento sirve como recibo y factura del servicio descrito, conforme a la Ley No. 135-11
+        y la Ley No. 172-13 sobre Protección de Datos Personales. CONAVIHSIDA, República Dominicana.
+    </p>
+</article>

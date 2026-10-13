@@ -1,0 +1,129 @@
+@model List<CitaDto>
+@{
+    Layout = "_LayoutPaciente";
+    ViewData["Title"] = "Mis citas";
+
+    var proximas = Model
+        .Where(c => c.Estado != "Cancelada" && c.Fecha.Date >= DateTime.Today)
+        .OrderBy(c => c.Fecha).ThenBy(c => c.Hora)
+        .ToList();
+    var historial = Model
+        .Except(proximas)
+        .OrderByDescending(c => c.Fecha).ThenByDescending(c => c.Hora)
+        .ToList();
+}
+
+<div class="cabecera">
+    <div>
+        <h1 class="titulo-pagina">Mis citas</h1>
+        <p class="bajada">Tus consultas agendadas. Si no puedes asistir, cancela con tiempo para liberar el espacio.</p>
+    </div>
+    <a asp-controller="Citas" asp-action="Agendar" class="btn btn-primario">
+        <svg class="icono" aria-hidden="true"><use href="#i-mas" /></svg>
+        Agendar cita
+    </a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="panel vacio">
+        <span class="vacio-icono"><svg class="icono" aria-hidden="true"><use href="#i-calendario" /></svg></span>
+        <h2>Aún no tienes citas</h2>
+        <p>Elige médico, día y hora, y tu cita queda confirmada al momento.</p>
+        <a asp-controller="Citas" asp-action="Agendar" class="btn btn-primario">Agendar mi primera cita</a>
+    </div>
+}
+else
+{
+    <div class="pestanas" role="tablist" aria-label="Filtrar citas" data-pestanas>
+        <button type="button" class="pestana" role="tab" id="tab-proximas" aria-controls="panel-proximas" aria-selected="true">
+            Próximas <span class="pestana-cuenta">@proximas.Count</span>
+        </button>
+        <button type="button" class="pestana" role="tab" id="tab-historial" aria-controls="panel-historial" aria-selected="false">
+            Historial <span class="pestana-cuenta">@historial.Count</span>
+        </button>
+    </div>
+
+    <div id="panel-proximas" role="tabpanel" aria-labelledby="tab-proximas" data-pestana-panel>
+        <h2 class="grupo-titulo">Próximas</h2>
+        @if (!proximas.Any())
+        {
+            <div class="panel vacio">
+                <span class="vacio-icono"><svg class="icono" aria-hidden="true"><use href="#i-calendario" /></svg></span>
+                <h2>No tienes citas por delante</h2>
+                <a asp-controller="Citas" asp-action="Agendar" class="btn btn-primario">Agendar cita</a>
+            </div>
+        }
+        else
+        {
+            <ul class="panel lista">
+                @foreach (var cita in proximas)
+                {
+                    var descripcion = cita.Fecha.ToString("dddd d 'de' MMMM") + " a las " + cita.Hora + " con " + cita.MedicoNombre;
+                    <li class="fila">
+                        <span class="fecha-chip" aria-hidden="true">
+                            <b>@cita.Fecha.ToString("dd")</b>
+                            <span>@cita.Fecha.ToString("MMM").TrimEnd('.')</span>
+                        </span>
+                        <div>
+                            <p class="fila-titulo">@cita.MedicoNombre</p>
+                            <p class="fila-meta">
+                                <span><svg class="icono" aria-hidden="true"><use href="#i-reloj" /></svg> @cita.Fecha.ToString("dddd") a las @cita.Hora</span>
+                                <span><svg class="icono" aria-hidden="true"><use href="#i-medico" /></svg> @cita.Especialidad</span>
+                            </p>
+                            @if (!string.IsNullOrWhiteSpace(cita.Motivo))
+                            {
+                                <p class="fila-nota">@cita.Motivo</p>
+                            }
+                        </div>
+                        <div class="fila-acciones">
+                            <span class="estado @(cita.Estado == "Confirmada" ? "estado-ok" : "estado-pendiente")">@cita.Estado</span>
+                            <form asp-controller="Citas" asp-action="Cancelar" method="post"
+                                  data-confirmar="¿Cancelar tu cita?"
+                                  data-confirmar-texto="Vas a cancelar la cita del @descripcion. El horario quedará libre para otra persona."
+                                  data-confirmar-boton="Sí, cancelar cita">
+                                <input type="hidden" name="id" value="@cita.Id" />
+                                <button type="submit" class="btn btn-texto">Cancelar cita</button>
+                            </form>
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+
+    <div id="panel-historial" role="tabpanel" aria-labelledby="tab-historial" data-pestana-panel hidden>
+        <h2 class="grupo-titulo">Historial</h2>
+        @if (!historial.Any())
+        {
+            <div class="panel vacio">
+                <p>Aquí verás tus citas pasadas y las que hayas cancelado.</p>
+            </div>
+        }
+        else
+        {
+            <ul class="panel lista">
+                @foreach (var cita in historial)
+                {
+                    var cancelada = cita.Estado == "Cancelada";
+                    <li class="fila fila-apagada">
+                        <span class="fecha-chip" aria-hidden="true">
+                            <b>@cita.Fecha.ToString("dd")</b>
+                            <span>@cita.Fecha.ToString("MMM").TrimEnd('.')</span>
+                        </span>
+                        <div>
+                            <p class="fila-titulo">@cita.MedicoNombre</p>
+                            <p class="fila-meta">
+                                <span><svg class="icono" aria-hidden="true"><use href="#i-reloj" /></svg> @cita.Fecha.ToString("d 'de' MMMM yyyy"), @cita.Hora</span>
+                                <span><svg class="icono" aria-hidden="true"><use href="#i-medico" /></svg> @cita.Especialidad</span>
+                            </p>
+                        </div>
+                        <div class="fila-acciones">
+                            <span class="estado estado-neutro">@(cancelada ? "Cancelada" : "Pasada")</span>
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+}
