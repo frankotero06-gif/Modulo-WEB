@@ -1490,3 +1490,11 @@ html:not(.js) .pestanas { display: none; }
   .recibo::after { display: none; }
   .recibo-sello { animation: none; }
 }
+
+/* ---------------------------------------------------------------------
+   Pantalla de error cuando el sistema (Gateway) no responde
+   --------------------------------------------------------------------- */
+.error-servicio { max-width: 560px; margin: 24px auto 0; padding: 48px 32px; }
+.error-icono { background: var(--ambar-50); color: var(--ambar); }
+.titulo-error { font-size: 26px; }
+.error-acciones { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 8px; }

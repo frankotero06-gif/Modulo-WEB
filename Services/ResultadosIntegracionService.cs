@@ -20,8 +20,8 @@ public class ResultadosIntegracionService : IResultadosService
 
     public async Task<List<ResultadoLabDto>> ObtenerResultadosPacienteAsync(string pacienteId)
     {
-        // TODO: GET /pacientes/{id}/resultados (vista resumida, sin valores clínicos)
-        var resultado = await _httpClient.GetFromJsonAsync<List<ResultadoLabDto>>($"pacientes/{pacienteId}/resultados");
+        // GET pacientes/{id}/resultados (vista resumida, sin valores clínicos)
+        var resultado = await LecturaGateway.ObtenerAsync<List<ResultadoLabDto>>(_httpClient, $"pacientes/{pacienteId}/resultados");
         return resultado ?? new List<ResultadoLabDto>();
     }
 }

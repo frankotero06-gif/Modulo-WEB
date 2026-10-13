@@ -24,13 +24,13 @@ public class PagoIntegracionService : IPagoService
 
     public async Task<List<FacturaDto>> ObtenerFacturasPacienteAsync(string pacienteId)
     {
-        var resultado = await _httpClient.GetFromJsonAsync<List<FacturaDto>>($"pacientes/{pacienteId}/facturas");
+        var resultado = await LecturaGateway.ObtenerAsync<List<FacturaDto>>(_httpClient, $"pacientes/{pacienteId}/facturas");
         return resultado ?? new List<FacturaDto>();
     }
 
     public async Task<FacturaDto?> ObtenerFacturaAsync(string pacienteId, int facturaId)
     {
-        return await _httpClient.GetFromJsonAsync<FacturaDto>($"pacientes/{pacienteId}/facturas/{facturaId}");
+        return await LecturaGateway.ObtenerAsync<FacturaDto>(_httpClient, $"pacientes/{pacienteId}/facturas/{facturaId}", nullSiNoExiste: true);
     }
 
     public async Task<ResultadoPago> PagarFacturaAsync(string pacienteId, int facturaId, string referenciaPasarela)

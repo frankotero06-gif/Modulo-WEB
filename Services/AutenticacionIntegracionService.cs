@@ -27,7 +27,7 @@ public class AutenticacionIntegracionService : IAutenticacionService
             var respuesta = await _httpClient.PostAsJsonAsync("auth/paciente/login", new { correo, clave });
             if (!respuesta.IsSuccessStatusCode)
             {
-                return ResultadoLogin.Fallo("Correo o contraseña incorrectos.");
+                return ResultadoLogin.Fallo(await MensajeErrorLoginAsync(respuesta));
             }
 
             var datos = await respuesta.Content.ReadFromJsonAsync<RespuestaAuthApi>();
@@ -96,6 +96,27 @@ public class AutenticacionIntegracionService : IAutenticacionService
         {
             return ResultadoRegistro.Fallo("No se pudo conectar con el sistema. Intenta de nuevo en unos minutos.");
         }
+    }
+
+    /// <summary>
+    /// Mensaje para el paciente cuando el login falla. Si el Gateway manda
+    /// { error } (por ejemplo, cuenta bloqueada por intentos con 429), se
+    /// muestra ese texto. En el login, 400/401/403/404 significan credenciales
+    /// incorrectas, no sesión vencida, por eso no se usa directamente
+    /// ApiErrores.LeerMensajeAsync para esos códigos.
+    /// </summary>
+    private static async Task<string> MensajeErrorLoginAsync(HttpResponseMessage respuesta)
+    {
+        var codigo = (int)respuesta.StatusCode;
+        if (codigo is 400 or 401 or 403 or 404)
+        {
+            return await ApiErrores.LeerErrorDelCuerpoAsync(respuesta) ?? "Correo o contraseña incorrectos.";
+        }
+
+        var porDefecto = codigo == 429
+            ? "Tu cuenta está bloqueada temporalmente por varios intentos fallidos. Espera unos minutos e intenta de nuevo."
+            : "No se pudo iniciar sesión en este momento. Intenta de nuevo en unos minutos.";
+        return await ApiErrores.LeerMensajeAsync(respuesta, porDefecto);
     }
 
     private class RespuestaAuthApi
