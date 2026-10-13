@@ -1,0 +1,85 @@
+@* Layout de la página principal pública (antes de iniciar sesión). *@
+@{
+    var haySesion = (ViewBag.HaySesion as bool?) == true;
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <meta name="description" content="Portal del paciente de CONAVIHSIDA: agenda tus citas, sigue tus análisis y paga en línea con total confidencialidad." />
+    <script>document.documentElement.classList.add("js");</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght%4012..96,500..800&family=Figtree:wght%40400..700&display=swap" />
+    <link rel="stylesheet" href="~/css/portal.css" asp-append-version="true" />
+</head>
+<body class="publico">
+    <partial name="_Iconos" />
+    <a class="saltar" href="#contenido">Saltar al contenido</a>
+
+    <header class="pub-barra" data-barra>
+        <div class="pub-barra-interior">
+            <a class="marca" asp-controller="Principal" asp-action="Index">
+                <svg class="marca-lazo" aria-hidden="true"><use href="#i-lazo" /></svg>
+                <span class="marca-texto">
+                    <strong>CONAVIHSIDA</strong>
+                    <span>Consejo Nacional para el VIH y el SIDA</span>
+                </span>
+            </a>
+
+            <button type="button" class="barra-menu" aria-expanded="false" aria-controls="pub-panel" data-menu>
+                <svg class="icono" aria-hidden="true"><use href="#i-menu" /></svg>
+                <span class="sr">Abrir menú</span>
+            </button>
+
+            <div class="pub-panel" id="pub-panel">
+                <nav class="pub-nav" aria-label="Secciones">
+                    <a href="#quienes-somos">Quiénes somos</a>
+                    <a href="#que-hacemos">Qué hacemos</a>
+                    <a href="#portal">El portal</a>
+                    <a href="#contacto">Contacto</a>
+                </nav>
+                <div class="pub-acciones">
+                    @if (haySesion)
+                    {
+                        <a asp-controller="Inicio" asp-action="Index" class="btn btn-claro btn-chico">
+                            <svg class="icono" aria-hidden="true"><use href="#i-usuario" /></svg>
+                            Ir a mi portal
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Cuenta" asp-action="Registro" class="btn btn-fantasma btn-chico">Crear cuenta</a>
+                        <a asp-controller="Cuenta" asp-action="Login" class="btn btn-claro btn-chico">Iniciar sesión</a>
+                    }
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main id="contenido">
+        @RenderBody()
+    </main>
+
+    <footer class="pub-pie">
+        <div class="pub-pie-interior">
+            <div class="marca marca-clara">
+                <svg class="marca-lazo" aria-hidden="true"><use href="#i-lazo" /></svg>
+                <span class="marca-texto">
+                    <strong>CONAVIHSIDA</strong>
+                    <span>Consejo Nacional para el VIH y el SIDA</span>
+                </span>
+            </div>
+            <p>
+                Proyecto académico de Desarrollo de Software III. Simula el portal del paciente de CONAVIHSIDA;
+                no es el sitio oficial de la institución.
+            </p>
+        </div>
+    </footer>
+
+    <script src="~/js/portal.js" asp-append-version="true"></script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

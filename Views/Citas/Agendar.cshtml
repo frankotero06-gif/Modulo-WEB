@@ -1,0 +1,153 @@
+@model AgendarCitaViewModel
+@{
+    Layout = "_LayoutPaciente";
+    ViewData["Title"] = "Agendar cita";
+
+    // Próximos 15 días hábiles (lunes a viernes), empezando mañana.
+    var dias = new List<DateTime>();
+    for (var d = DateTime.Today.AddDays(1); dias.Count < 15; d = d.AddDays(1))
+    {
+        if (d.DayOfWeek != DayOfWeek.Saturday && d.DayOfWeek != DayOfWeek.Sunday)
+        {
+            dias.Add(d);
+        }
+    }
+
+    // "Dra. Ramírez" → "R"; "Ana María Gómez" → "AM". Se saltan los títulos (Dr., Dra., Lic.).
+    string Iniciales(string nombre) => string.Concat(
+        nombre.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+              .Where(p => !p.EndsWith("."))
+              .Take(2)
+              .Select(p => char.ToUpperInvariant(p[0])));
+}
+
+<a asp-controller="Citas" asp-action="Index" class="volver">
+    <svg class="icono" aria-hidden="true"><use href="#i-atras" /></svg>
+    Mis citas
+</a>
+
+<div class="cabecera">
+    <div>
+        <h1 class="titulo-pagina">Agendar cita</h1>
+        <p class="bajada">Elige con quién, qué día y a qué hora. La cita queda confirmada al momento.</p>
+    </div>
+</div>
+
+<form class="agendar-grid" asp-controller="Citas" asp-action="Agendar" method="post" novalidate
+      id="form-agendar" data-url-horarios="@Url.Action("HorariosDisponibles", "Citas")">
+
+    <div class="agendar-pasos">
+        <div asp-validation-summary="ModelOnly" class="resumen-error"></div>
+
+        <section class="panel bloque" data-bloque="medico">
+            <div class="bloque-titulo">
+                <span class="bloque-num">1</span>
+                <h2>¿Con quién?</h2>
+            </div>
+            <div class="medicos" role="radiogroup" aria-label="Médico">
+                @foreach (var medico in Model.Medicos.Where(m => m.Activo))
+                {
+                    <label class="medico">
+                        <input type="radio" class="radio-oculto" name="Form.MedicoId" value="@medico.Id"
+                               data-nombre="@medico.Nombre" data-especialidad="@medico.Especialidad"
+                               checked="@(Model.Form.MedicoId == medico.Id)" />
+                        <span class="medico-cuerpo">
+                            <span class="medico-iniciales" aria-hidden="true">@Iniciales(medico.Nombre)</span>
+                            <span class="medico-texto">
+                                <strong>@medico.Nombre</strong>
+                                <span>@medico.Especialidad</span>
+                            </span>
+                        </span>
+                    </label>
+                }
+            </div>
+            <span asp-validation-for="Form.MedicoId" class="campo-error"></span>
+        </section>
+
+        <section class="panel bloque" data-bloque="fecha">
+            <div class="bloque-titulo">
+                <span class="bloque-num">2</span>
+                <h2>¿Qué día?</h2>
+            </div>
+            <div class="dias" role="radiogroup" aria-label="Día">
+                @for (var i = 0; i < dias.Count; i++)
+                {
+                    var dia = dias[i];
+                    var nuevaSemana = i > 0 && dia.DayOfWeek == DayOfWeek.Monday;
+                    <label class="dia @(nuevaSemana ? "dia-semana-nueva" : "")">
+                        <input type="radio" class="radio-oculto" name="Form.Fecha" value="@dia.ToString("yyyy-MM-dd")"
+                               data-texto="@dia.ToString("dddd d 'de' MMMM")"
+                               checked="@(Model.Form.Fecha.Date == dia)" />
+                        <span class="dia-cuerpo">
+                            <span class="dia-semana">@dia.ToString("ddd").TrimEnd('.')</span>
+                            <span class="dia-num">@dia.Day</span>
+                            <span class="dia-mes">@dia.ToString("MMM").TrimEnd('.')</span>
+                        </span>
+                    </label>
+                }
+            </div>
+            <span asp-validation-for="Form.Fecha" class="campo-error"></span>
+        </section>
+
+        <section class="panel bloque" data-bloque="hora">
+            <div class="bloque-titulo">
+                <span class="bloque-num">3</span>
+                <h2>¿A qué hora?</h2>
+            </div>
+            <div id="horarios-disponibles" aria-live="polite">
+                <p class="pista">
+                    <svg class="icono" aria-hidden="true"><use href="#i-info" /></svg>
+                    Elige médico y día para ver las horas libres.
+                </p>
+            </div>
+            <input type="hidden" name="Form.Hora" id="input-hora" value="@Model.Form.Hora" />
+            <span asp-validation-for="Form.Hora" class="campo-error"></span>
+        </section>
+
+        <section class="panel bloque" data-bloque="motivo">
+            <div class="bloque-titulo">
+                <span class="bloque-num">4</span>
+                <h2><label for="input-motivo">¿Cuál es el motivo?</label></h2>
+            </div>
+            <div class="campo">
+                <textarea id="input-motivo" name="Form.Motivo" rows="3" maxlength="300"
+                          placeholder="Ej. control trimestral, renovar receta, tengo una duda sobre mi tratamiento">@Model.Form.Motivo</textarea>
+                <span class="contador" data-contador="input-motivo">0 / 300</span>
+                <span asp-validation-for="Form.Motivo" class="campo-error"></span>
+            </div>
+        </section>
+    </div>
+
+    <aside class="panel resumen" aria-labelledby="titulo-resumen">
+        <h2 id="titulo-resumen">Tu cita</h2>
+        <dl class="resumen-datos">
+            <div class="resumen-dato" data-resumen="medico">
+                <span class="resumen-dato-icono" aria-hidden="true"><svg class="icono"><use href="#i-medico" /></svg></span>
+                <div>
+                    <dt>Médico</dt>
+                    <dd class="vacio-dato">Sin elegir</dd>
+                </div>
+            </div>
+            <div class="resumen-dato" data-resumen="fecha">
+                <span class="resumen-dato-icono" aria-hidden="true"><svg class="icono"><use href="#i-calendario" /></svg></span>
+                <div>
+                    <dt>Día</dt>
+                    <dd class="vacio-dato">Sin elegir</dd>
+                </div>
+            </div>
+            <div class="resumen-dato" data-resumen="hora">
+                <span class="resumen-dato-icono" aria-hidden="true"><svg class="icono"><use href="#i-reloj" /></svg></span>
+                <div>
+                    <dt>Hora</dt>
+                    <dd class="vacio-dato">Sin elegir</dd>
+                </div>
+            </div>
+        </dl>
+        <button type="submit" class="btn btn-primario btn-bloque" id="btn-agendar" data-enviando="Confirmando…" disabled>Confirmar cita</button>
+        <p class="resumen-falta" id="resumen-falta" aria-live="polite"></p>
+    </aside>
+</form>
+
+@section Scripts {
+    <script src="~/js/agendar.js" asp-append-version="true"></script>
+}

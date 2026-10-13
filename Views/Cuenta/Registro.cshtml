@@ -1,0 +1,132 @@
+@model RegistroViewModel
+@{
+    Layout = "_LayoutAcceso";
+    ViewData["Title"] = "Crear cuenta";
+}
+
+<h1 class="acceso-titulo">Crea tu cuenta</h1>
+<p class="acceso-sub">Te toma unos dos minutos. Solo pedimos datos para identificarte y contactarte; nada sobre tu salud.</p>
+
+<form class="formulario registro" asp-controller="Cuenta" asp-action="Registro" method="post" novalidate data-registro>
+    <ol class="pasos" aria-label="Pasos para crear la cuenta">
+        <li class="paso-marca" data-marca="1"><span class="paso-num">1</span><span class="paso-nombre">Tus datos</span></li>
+        <li class="paso-marca" data-marca="2"><span class="paso-num">2</span><span class="paso-nombre">Contacto</span></li>
+        <li class="paso-marca" data-marca="3"><span class="paso-num">3</span><span class="paso-nombre">Contraseña</span></li>
+    </ol>
+
+    <div asp-validation-summary="ModelOnly" class="resumen-error"></div>
+
+    <fieldset class="paso" data-paso="1">
+        <legend>Tus datos</legend>
+
+        <div class="fila-dos">
+            <div class="campo">
+                <label asp-for="Nombres">Nombre(s)</label>
+                <input asp-for="Nombres" autocomplete="given-name" />
+                <span asp-validation-for="Nombres" class="campo-error"></span>
+            </div>
+            <div class="campo">
+                <label asp-for="Apellidos">Apellidos</label>
+                <input asp-for="Apellidos" autocomplete="family-name" />
+                <span asp-validation-for="Apellidos" class="campo-error"></span>
+            </div>
+        </div>
+
+        <div class="fila-dos">
+            <div class="campo">
+                <label asp-for="Cedula">Cédula</label>
+                <input asp-for="Cedula" inputmode="numeric" placeholder="000-0000000-0" maxlength="13" data-mascara="cedula" />
+                <span asp-validation-for="Cedula" class="campo-error"></span>
+            </div>
+            <div class="campo">
+                <label asp-for="FechaNacimiento">Fecha de nacimiento</label>
+                <input asp-for="FechaNacimiento" type="date" max="@DateTime.Today.ToString("yyyy-MM-dd")" autocomplete="bday" />
+                <span asp-validation-for="FechaNacimiento" class="campo-error"></span>
+            </div>
+        </div>
+
+        <div class="paso-acciones">
+            <button type="button" class="btn btn-primario" data-siguiente>
+                Continuar
+                <svg class="icono" aria-hidden="true"><use href="#i-chevron" /></svg>
+            </button>
+        </div>
+    </fieldset>
+
+    <fieldset class="paso" data-paso="2">
+        <legend>¿Cómo te contactamos?</legend>
+
+        <div class="campo">
+            <label asp-for="Telefono">Teléfono</label>
+            <input asp-for="Telefono" type="tel" inputmode="tel" placeholder="809-555-1234" maxlength="14" autocomplete="tel-national" data-mascara="telefono" />
+            <span class="campo-ayuda">Lo usamos para confirmarte o reprogramar citas.</span>
+            <span asp-validation-for="Telefono" class="campo-error"></span>
+        </div>
+
+        <div class="campo">
+            <label asp-for="Correo">Correo electrónico</label>
+            <input asp-for="Correo" type="email" placeholder="tu@correo.com" autocomplete="email" />
+            <span class="campo-ayuda">Con este correo vas a iniciar sesión.</span>
+            <span asp-validation-for="Correo" class="campo-error"></span>
+        </div>
+
+        <div class="paso-acciones">
+            <button type="button" class="btn btn-secundario" data-anterior>
+                <svg class="icono" aria-hidden="true"><use href="#i-atras" /></svg>
+                Atrás
+            </button>
+            <button type="button" class="btn btn-primario" data-siguiente>
+                Continuar
+                <svg class="icono" aria-hidden="true"><use href="#i-chevron" /></svg>
+            </button>
+        </div>
+    </fieldset>
+
+    <fieldset class="paso" data-paso="3">
+        <legend>Protege tu cuenta</legend>
+
+        <div class="campo">
+            <label asp-for="Clave">Contraseña</label>
+            <div class="campo-clave">
+                <input asp-for="Clave" autocomplete="new-password" data-medidor="medidor-clave" />
+                <button type="button" class="ver-clave" data-ver-clave aria-pressed="false">
+                    <svg class="icono" aria-hidden="true"><use href="#i-ojo" /></svg>
+                    <span class="sr">Mostrar contraseña</span>
+                </button>
+            </div>
+            <div class="medidor" id="medidor-clave" data-nivel="0" aria-live="polite">
+                <span class="medidor-barras" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+                <span class="medidor-texto">Mínimo 8 caracteres, con letras y números.</span>
+            </div>
+            <span asp-validation-for="Clave" class="campo-error"></span>
+        </div>
+
+        <div class="campo">
+            <label asp-for="ConfirmarClave">Repite la contraseña</label>
+            <input asp-for="ConfirmarClave" autocomplete="new-password" />
+            <span asp-validation-for="ConfirmarClave" class="campo-error"></span>
+        </div>
+
+        <div class="campo campo-check">
+            <input asp-for="AceptaPrivacidad" />
+            <label asp-for="AceptaPrivacidad">
+                Acepto que CONAVIHSIDA use mis datos personales para gestionar mis citas y pagos, según la Ley 172-13.
+                Entiendo que mi información clínica solo la ve el personal médico.
+            </label>
+            <span asp-validation-for="AceptaPrivacidad" class="campo-error"></span>
+        </div>
+
+        <div class="paso-acciones">
+            <button type="button" class="btn btn-secundario" data-anterior>
+                <svg class="icono" aria-hidden="true"><use href="#i-atras" /></svg>
+                Atrás
+            </button>
+            <button type="submit" class="btn btn-primario" data-enviando="Creando cuenta…">Crear cuenta</button>
+        </div>
+    </fieldset>
+</form>
+
+<p class="acceso-alterno">
+    ¿Ya tienes cuenta?
+    <a asp-controller="Cuenta" asp-action="Login">Inicia sesión</a>
+</p>

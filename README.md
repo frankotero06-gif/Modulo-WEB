@@ -20,7 +20,7 @@ compilar esto en este entorno (no hay SDK de .NET disponible), así que
 corre `dotnet build` apenas lo abras para atrapar cualquier detalle.
 
 ```bash
-cd PortalCitas
+# desde la raíz del repositorio
 dotnet run
 ```
 

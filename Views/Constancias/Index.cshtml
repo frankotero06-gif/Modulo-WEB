@@ -1,0 +1,63 @@
+@model List<ConstanciaDto>
+@{
+    Layout = "_LayoutPaciente";
+    ViewData["Title"] = "Mis constancias";
+
+    string Icono(string tipo) => tipo switch
+    {
+        TiposConstancia.CitaAgendada => "#i-calendario",
+        TiposConstancia.CitaCancelada => "#i-cerrar",
+        TiposConstancia.PagoRealizado => "#i-tarjeta",
+        _ => "#i-usuario",
+    };
+    string ClaseIcono(string tipo) => tipo switch
+    {
+        TiposConstancia.CitaCancelada => "neutro",
+        TiposConstancia.PagoRealizado => "verde",
+        _ => "",
+    };
+}
+
+<div class="cabecera">
+    <div>
+        <h1 class="titulo-pagina">Mis constancias</h1>
+        <p class="bajada">Cada vez que haces algo en el portal (crear tu cuenta, agendar o cancelar una cita, pagar) queda una constancia. Puedes verla, imprimirla o descargarla en PDF.</p>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="panel vacio">
+        <span class="vacio-icono"><svg class="icono" aria-hidden="true"><use href="#i-documento" /></svg></span>
+        <h2>Aún no tienes constancias</h2>
+        <p>Cuando agendes una cita o hagas un pago, aquí aparecerá su constancia.</p>
+    </div>
+}
+else
+{
+    <ul class="panel lista">
+        @foreach (var c in Model)
+        {
+            <li class="fila fila-constancia">
+                <span class="tipo-icono @ClaseIcono(c.Tipo)" aria-hidden="true">
+                    <svg class="icono"><use href="@Icono(c.Tipo)" /></svg>
+                </span>
+                <div>
+                    <p class="fila-titulo">
+                        <a asp-controller="Constancias" asp-action="Ver" asp-route-id="@c.Id" class="enlace-fila">@c.Titulo</a>
+                    </p>
+                    <p class="fila-meta">
+                        <span>@c.Descripcion</span>
+                    </p>
+                    <p class="fila-nota">@c.Numero, emitida el @c.FechaEmision.ToString("d 'de' MMMM yyyy, h:mm tt")</p>
+                </div>
+                <div class="fila-acciones">
+                    <a asp-controller="Constancias" asp-action="Pdf" asp-route-id="@c.Id" class="btn btn-secundario btn-chico" download>
+                        <svg class="icono" aria-hidden="true"><use href="#i-descargar" /></svg>
+                        PDF
+                    </a>
+                </div>
+            </li>
+        }
+    </ul>
+}

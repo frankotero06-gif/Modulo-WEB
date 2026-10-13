@@ -1,0 +1,64 @@
+@model List<ResultadoLabDto>
+@{
+    Layout = "_LayoutPaciente";
+    ViewData["Title"] = "Resultados";
+}
+
+<div class="cabecera">
+    <div>
+        <h1 class="titulo-pagina">Mis resultados</h1>
+        <p class="bajada">Aquí ves en qué va cada análisis que te mandaron. Cuando esté listo, tu médico lo revisa contigo.</p>
+    </div>
+</div>
+
+<p class="nota nota-info nota-pagina">
+    <svg class="icono" aria-hidden="true"><use href="#i-escudo" /></svg>
+    <span>
+        Por tu privacidad, esta pantalla no muestra valores clínicos como carga viral o conteo CD4,
+        solo si el análisis ya está listo. Los resultados te los explica tu médico en consulta.
+    </span>
+</p>
+
+@if (!Model.Any())
+{
+    <div class="panel vacio">
+        <span class="vacio-icono"><svg class="icono" aria-hidden="true"><use href="#i-matraz" /></svg></span>
+        <h2>No tienes análisis registrados</h2>
+        <p>Cuando tu médico te indique uno, lo verás aquí con su estado.</p>
+    </div>
+}
+else
+{
+    <ul class="panel lista">
+        @foreach (var resultado in Model)
+        {
+            var listo = resultado.Estado == "Listo";
+            <li class="fila">
+                <span class="fecha-chip" aria-hidden="true">
+                    <b>@resultado.FechaSolicitud.ToString("dd")</b>
+                    <span>@resultado.FechaSolicitud.ToString("MMM").TrimEnd('.')</span>
+                </span>
+                <div>
+                    <p class="fila-titulo">@resultado.Prueba</p>
+                    <p class="fila-meta">
+                        <span><svg class="icono" aria-hidden="true"><use href="#i-calendario" /></svg> Solicitado el @resultado.FechaSolicitud.ToString("d 'de' MMMM")</span>
+                    </p>
+                    <div class="avance @(listo ? "" : "avance-pendiente")" aria-hidden="true">
+                        <span class="avance-punto"></span>
+                        <span>Solicitado</span>
+                        <span class="avance-linea"></span>
+                        <span class="avance-punto avance-fin"></span>
+                        <span>@(listo ? "Listo" : "En proceso")</span>
+                    </div>
+                    @if (!string.IsNullOrEmpty(resultado.Nota))
+                    {
+                        <p class="fila-nota">@resultado.Nota</p>
+                    }
+                </div>
+                <div class="fila-acciones">
+                    <span class="estado @(listo ? "estado-ok" : "estado-pendiente")">@(listo ? "Listo" : "En proceso")</span>
+                </div>
+            </li>
+        }
+    </ul>
+}

@@ -1,0 +1,189 @@
+@{
+    Layout = "_LayoutPublico";
+    ViewData["Title"] = "CONAVIHSIDA · Portal del paciente";
+
+    var haySesion = (ViewBag.HaySesion as bool?) == true;
+    var foto = ViewBag.FotoEdificio as string;
+    var nombre = ViewBag.NombrePaciente as string;
+    var primerNombre = nombre?.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+
+    // Valores institucionales (Informe CAF CONAVIHSIDA 2024).
+    var valores = new[]
+    {
+        "Equidad", "Solidaridad", "Confidencialidad", "Integridad", "Transparencia",
+        "Respeto a los derechos humanos", "No estigmatización", "No discriminación", "Compromiso", "Excelencia"
+    };
+}
+
+<section class="portada">
+    <div class="portada-interior">
+        <div class="portada-texto">
+            <h1>Coordinamos la respuesta nacional al VIH y al sida en República Dominicana.</h1>
+            <p class="portada-bajada">
+                En el Portal del paciente agendas tus citas, sigues tus análisis y pagas tus servicios en línea.
+                Todo lo que haces queda en una constancia que puedes descargar, y tu información es confidencial.
+            </p>
+            <div class="portada-acciones">
+                @if (haySesion)
+                {
+                    <a asp-controller="Inicio" asp-action="Index" class="btn btn-claro">
+                        @(string.IsNullOrEmpty(primerNombre) ? "Ir a mi portal" : $"Continuar como {primerNombre}")
+                    </a>
+                }
+                else
+                {
+                    <a asp-controller="Cuenta" asp-action="Registro" class="btn btn-claro">Crear mi cuenta</a>
+                    <a asp-controller="Cuenta" asp-action="Login" class="btn btn-fantasma">Ya tengo cuenta</a>
+                }
+            </div>
+        </div>
+
+        <div class="portada-imagen @(foto != null ? "con-foto" : "")">
+            @if (foto != null)
+            {
+                <img src="@foto" alt="Edificio de CONAVIHSIDA" />
+            }
+            <svg class="portada-lazo" viewBox="0 0 100 140" aria-hidden="true">
+                <path class="lazo-sombra" d="M24 134 L56 72 C64 55 70 40 64 26 C58 10 42 10 36 26 C30 40 36 55 44 72 L76 134" />
+                <path class="lazo-trazo" pathLength="1" d="M24 134 L56 72 C64 55 70 40 64 26 C58 10 42 10 36 26 C30 40 36 55 44 72 L76 134" />
+            </svg>
+        </div>
+    </div>
+</section>
+
+<section class="pub-seccion" id="quienes-somos" aria-labelledby="titulo-quienes">
+    <div class="pub-interior quienes">
+        <div>
+            <h2 id="titulo-quienes" class="pub-titulo">Quiénes somos</h2>
+            <p class="pub-lead">
+                El Consejo Nacional para el VIH y el SIDA (CONAVIHSIDA) es la institución del Estado dominicano que
+                coordina la respuesta nacional al VIH y al sida, junto al sector público, el sector privado y la sociedad civil.
+            </p>
+            <p>
+                Fue creado por la Ley No. 135-11, del 7 de junio de 2011, y está adscrito al Ministerio de Salud Pública.
+                Su reglamento interno lo establece el Decreto No. 217-13.
+            </p>
+        </div>
+
+        <div class="mision-vision">
+            <figure class="cita-institucional">
+                <figcaption>Misión</figcaption>
+                <blockquote>
+                    Coordinar y conducir la Respuesta Nacional al VIH y al Sida, para reducir el riesgo, vulnerabilidad e
+                    impacto de la epidemia del VIH, por el futuro del país y de la humanidad, mediante la formulación y
+                    aplicación efectiva de políticas, estrategias multisectoriales, planes y programas; apoyándose en la
+                    participación cogestionada e inclusiva de los diversos sectores y actores de la sociedad dominicana,
+                    de manera sostenida, concertada y organizada a nivel nacional.
+                </blockquote>
+            </figure>
+            <figure class="cita-institucional">
+                <figcaption>Visión</figcaption>
+                <blockquote>
+                    El Gobierno Dominicano y la sociedad mitigan el impacto y propagación de la epidemia del VIH, mediante
+                    la articulación de esfuerzos políticos, programáticos y financieros, coordinados, concertados y
+                    sostenidos en el tiempo.
+                </blockquote>
+            </figure>
+        </div>
+    </div>
+
+    <div class="pub-interior">
+        <h3 class="valores-titulo">Nuestros valores</h3>
+        <ul class="valores">
+            @foreach (var valor in valores)
+            {
+                <li>@valor</li>
+            }
+        </ul>
+    </div>
+</section>
+
+<section class="pub-seccion pub-seccion-alterna" id="que-hacemos" aria-labelledby="titulo-hacemos">
+    <div class="pub-interior">
+        <h2 id="titulo-hacemos" class="pub-titulo">Qué hacemos</h2>
+        <p class="pub-lead pub-lead-corto">Formulamos políticas, estrategias y programas con la participación de todos los sectores. Para las personas, esto se traduce en:</p>
+        <ul class="servicios">
+            <li>
+                <span class="servicio-icono"><svg class="icono" aria-hidden="true"><use href="#i-personas" /></svg></span>
+                <h3>Educación e información</h3>
+                <p>Información sobre el VIH para toda la población, con énfasis en las poblaciones clave y más vulnerables.</p>
+            </li>
+            <li>
+                <span class="servicio-icono"><svg class="icono" aria-hidden="true"><use href="#i-corazon" /></svg></span>
+                <h3>Orientación en atención integral</h3>
+                <p>Acompañamiento sobre la atención integral del VIH y sus implicaciones sociales.</p>
+            </li>
+            <li>
+                <span class="servicio-icono"><svg class="icono" aria-hidden="true"><use href="#i-matraz" /></svg></span>
+                <h3>Gestión de medicamentos</h3>
+                <p>Los tratamientos antirretrovirales están garantizados con subsidio del 100% por el Estado dominicano.</p>
+            </li>
+        </ul>
+    </div>
+</section>
+
+<section class="pub-seccion" id="portal" aria-labelledby="titulo-portal">
+    <div class="pub-interior portal-bloque">
+        <div>
+            <h2 id="titulo-portal" class="pub-titulo">El Portal del paciente</h2>
+            <p class="pub-lead">Hecho para que resuelvas en línea lo que antes requería ir a ventanilla.</p>
+            <ul class="portal-lista">
+                <li><svg class="icono" aria-hidden="true"><use href="#i-calendario" /></svg> Agenda, revisa o cancela tus citas.</li>
+                <li><svg class="icono" aria-hidden="true"><use href="#i-matraz" /></svg> Mira cuándo están listos tus análisis.</li>
+                <li><svg class="icono" aria-hidden="true"><use href="#i-tarjeta" /></svg> Paga tus consultas y descarga el recibo y la factura.</li>
+                <li><svg class="icono" aria-hidden="true"><use href="#i-documento" /></svg> Descarga en PDF la constancia de todo lo que haces.</li>
+            </ul>
+        </div>
+
+        <div class="empezar">
+            <h3>Cómo empezar</h3>
+            <ol class="empezar-pasos">
+                <li>
+                    <strong>Crea tu cuenta</strong>
+                    <span>Con tu cédula, teléfono y correo. No te pedimos datos de salud.</span>
+                </li>
+                <li>
+                    <strong>Agenda tu cita</strong>
+                    <span>Elige médico, día y hora. Queda confirmada al momento.</span>
+                </li>
+                <li>
+                    <strong>Guarda tu constancia</strong>
+                    <span>Descárgala en PDF o encuéntrala luego en "Mis constancias".</span>
+                </li>
+            </ol>
+            @if (!haySesion)
+            {
+                <a asp-controller="Cuenta" asp-action="Registro" class="btn btn-primario btn-bloque">Crear mi cuenta</a>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="privacidad-banda" aria-labelledby="titulo-privacidad">
+    <div class="pub-interior privacidad-interior">
+        <span class="privacidad-icono" aria-hidden="true"><svg class="icono"><use href="#i-escudo" /></svg></span>
+        <div>
+            <h2 id="titulo-privacidad">Tu información es confidencial</h2>
+            <p>
+                Protegida por la Ley 135-11 sobre VIH/SIDA y la Ley 172-13 de protección de datos personales.
+                El portal nunca muestra valores clínicos como carga viral o CD4: esos los revisa tu médico contigo.
+            </p>
+        </div>
+    </div>
+</section>
+
+<section class="pub-seccion" id="contacto" aria-labelledby="titulo-contacto">
+    <div class="pub-interior contacto">
+        <div>
+            <h2 id="titulo-contacto" class="pub-titulo">Contacto</h2>
+            <p class="pub-lead pub-lead-corto">
+                Para orientación sobre tu atención, acércate a tu centro de salud. La información institucional,
+                noticias y vías de contacto oficiales están en el sitio de CONAVIHSIDA.
+            </p>
+        </div>
+        <a class="btn btn-secundario" href="https://www.conavihsida.gob.do/" target="_blank" rel="noopener">
+            Ir a conavihsida.gob.do
+            <svg class="icono" aria-hidden="true"><use href="#i-externo" /></svg>
+        </a>
+    </div>
+</section>

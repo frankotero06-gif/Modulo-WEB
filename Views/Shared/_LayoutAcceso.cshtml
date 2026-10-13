@@ -1,0 +1,71 @@
+@* Layout de las pantallas sin sesión: Iniciar sesión y Crear cuenta. *@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] · Portal del paciente CONAVIHSIDA</title>
+    <script>document.documentElement.classList.add("js");</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght%4012..96,500..800&family=Figtree:wght%40400..700&display=swap" />
+    <link rel="stylesheet" href="~/css/portal.css" asp-append-version="true" />
+</head>
+<body class="acceso">
+    <partial name="_Iconos" />
+
+    <div class="acceso-grid">
+        <aside class="acceso-panel">
+            <a class="marca marca-clara" asp-controller="Principal" asp-action="Index" title="Ir a la página principal">
+                <svg class="marca-lazo" aria-hidden="true"><use href="#i-lazo" /></svg>
+                <span class="marca-texto">
+                    <strong>CONAVIHSIDA</strong>
+                    <span>Portal del paciente</span>
+                </span>
+            </a>
+
+            <svg class="lazo-grande" viewBox="0 0 100 140" aria-hidden="true">
+                <path class="lazo-sombra" d="M24 134 L56 72 C64 55 70 40 64 26 C58 10 42 10 36 26 C30 40 36 55 44 72 L76 134" />
+                <path class="lazo-trazo" pathLength="1" d="M24 134 L56 72 C64 55 70 40 64 26 C58 10 42 10 36 26 C30 40 36 55 44 72 L76 134" />
+            </svg>
+
+            <div class="acceso-mensaje">
+                <h2>Tus citas, tus análisis y tus pagos, en un solo lugar.</h2>
+                <ul class="acceso-lista">
+                    <li>
+                        <svg class="icono" aria-hidden="true"><use href="#i-calendario" /></svg>
+                        Agenda con tu médico en el horario que te quede mejor.
+                    </li>
+                    <li>
+                        <svg class="icono" aria-hidden="true"><use href="#i-matraz" /></svg>
+                        Mira cuándo están listos tus análisis de laboratorio.
+                    </li>
+                    <li>
+                        <svg class="icono" aria-hidden="true"><use href="#i-factura" /></svg>
+                        Paga tus consultas en línea y guarda el comprobante.
+                    </li>
+                </ul>
+            </div>
+
+            <p class="acceso-privacidad">
+                <svg class="icono" aria-hidden="true"><use href="#i-escudo" /></svg>
+                Lo que registras aquí es confidencial. Tus resultados clínicos solo los revisa tu médico.
+            </p>
+        </aside>
+
+        <main class="acceso-main" id="contenido">
+            <div class="acceso-contenido">
+                @RenderBody()
+            </div>
+            <p class="acceso-pie">
+                <a asp-controller="Principal" asp-action="Index">Volver a la página principal</a>
+                <br />
+                Consejo Nacional para el VIH y el SIDA, República Dominicana. Proyecto académico.
+            </p>
+        </main>
+    </div>
+
+    <script src="~/js/portal.js" asp-append-version="true"></script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,102 @@
+@model PagarFacturaViewModel
+@{
+    Layout = "_LayoutPaciente";
+    ViewData["Title"] = "Pagar factura";
+}
+
+<a asp-controller="Facturas" asp-action="Index" class="volver">
+    <svg class="icono" aria-hidden="true"><use href="#i-atras" /></svg>
+    Mis facturas
+</a>
+
+<div class="cabecera">
+    <div>
+        <h1 class="titulo-pagina">Pagar factura</h1>
+        <p class="bajada">Revisa el detalle y completa los datos de tu tarjeta. Al terminar recibes tu recibo y tu factura.</p>
+    </div>
+</div>
+
+<div class="pago-grid">
+    <div class="pago-lado">
+        <div class="panel factura-resumen">
+            <div>
+                <strong>@Model.Factura.Concepto</strong>
+                <span>Servicio del @Model.Factura.Fecha.ToString("d 'de' MMMM yyyy")</span>
+            </div>
+            <span class="monto">RD$ @Model.Factura.Monto.ToString("N2")</span>
+        </div>
+
+        <div class="tarjeta-escena" aria-hidden="true">
+            <div class="tarjeta" data-tarjeta>
+                <div class="tarjeta-cara tarjeta-frente">
+                    <svg class="tarjeta-lazo"><use href="#i-lazo" /></svg>
+                    <span class="tarjeta-chip"></span>
+                    <span class="tarjeta-numero" data-vista="numero">•••• •••• •••• ••••</span>
+                    <div class="tarjeta-pie">
+                        <div class="tarjeta-nombre">
+                            <small>Titular</small>
+                            <span data-vista="titular">Nombre Apellido</span>
+                        </div>
+                        <div>
+                            <small>Vence</small>
+                            <span data-vista="vencimiento">MM/AA</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="tarjeta-cara tarjeta-dorso">
+                    <div class="tarjeta-banda"></div>
+                    <div class="tarjeta-firma" data-vista="cvv">•••</div>
+                    <p>El código de seguridad está al dorso de tu tarjeta.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form class="panel pago-form formulario" asp-controller="Facturas" asp-action="Pagar" asp-route-id="@Model.Factura.Id"
+          method="post" novalidate autocomplete="on" data-pago>
+        <div asp-validation-summary="ModelOnly" class="resumen-error"></div>
+
+        <div class="campo">
+            <label asp-for="DatosPago.NombreTitular">Nombre del titular</label>
+            <input asp-for="DatosPago.NombreTitular" placeholder="Como aparece en la tarjeta" autocomplete="cc-name" data-hacia="titular" />
+            <span asp-validation-for="DatosPago.NombreTitular" class="campo-error"></span>
+        </div>
+
+        <div class="campo">
+            <label asp-for="DatosPago.NumeroTarjeta">Número de tarjeta</label>
+            <input asp-for="DatosPago.NumeroTarjeta" inputmode="numeric" placeholder="1234 5678 9012 3456" maxlength="19"
+                   autocomplete="cc-number" data-hacia="numero" data-mascara="tarjeta" />
+            <span asp-validation-for="DatosPago.NumeroTarjeta" class="campo-error"></span>
+        </div>
+
+        <div class="fila-dos">
+            <div class="campo">
+                <label asp-for="DatosPago.Vencimiento">Vencimiento</label>
+                <input asp-for="DatosPago.Vencimiento" inputmode="numeric" placeholder="MM/AA" maxlength="5"
+                       autocomplete="cc-exp" data-hacia="vencimiento" data-mascara="vencimiento" />
+                <span asp-validation-for="DatosPago.Vencimiento" class="campo-error"></span>
+            </div>
+            <div class="campo">
+                <label asp-for="DatosPago.Cvv">Código de seguridad</label>
+                <input asp-for="DatosPago.Cvv" inputmode="numeric" placeholder="123" maxlength="4"
+                       autocomplete="cc-csc" data-hacia="cvv" data-mascara="digitos" />
+                <span asp-validation-for="DatosPago.Cvv" class="campo-error"></span>
+            </div>
+        </div>
+
+        <p class="nota nota-alerta">
+            <svg class="icono" aria-hidden="true"><use href="#i-info" /></svg>
+            <span>Pago simulado para fines académicos: no se cobra nada. Una tarjeta que termine en 0000 se rechaza, para probar el error.</span>
+        </p>
+
+        <button type="submit" class="btn btn-primario btn-bloque" data-enviando="Procesando pago…">
+            <svg class="icono" aria-hidden="true"><use href="#i-candado" /></svg>
+            Pagar RD$ @Model.Factura.Monto.ToString("N2")
+        </button>
+
+        <p class="pago-seguro">
+            <svg class="icono" aria-hidden="true"><use href="#i-escudo" /></svg>
+            Los datos de tu tarjeta no se guardan en CONAVIHSIDA.
+        </p>
+    </form>
+</div>

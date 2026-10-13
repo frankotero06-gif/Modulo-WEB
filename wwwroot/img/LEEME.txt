@@ -1,0 +1,9 @@
+Foto de la portada (opcional)
+=============================
+
+Si colocan aquí una foto llamada "edificio.jpg" (por ejemplo, del edificio
+de CONAVIHSIDA), la página principal la muestra automáticamente junto al
+lazo rojo. Si no existe, la portada usa solo el lazo.
+
+Recomendado: foto horizontal o vertical de al menos 1200 px, en .jpg.
+Usen una foto propia o con permiso de uso.

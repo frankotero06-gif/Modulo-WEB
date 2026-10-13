@@ -1,0 +1,56 @@
+@model LoginViewModel
+@inject IConfiguration Configuracion
+@{
+    Layout = "_LayoutAcceso";
+    ViewData["Title"] = "Iniciar sesión";
+    var mensaje = ViewBag.Mensaje as string;
+    var esDemo = Configuracion.GetValue<bool>("UsarMockAutenticacion");
+}
+
+<h1 class="acceso-titulo">Inicia sesión</h1>
+<p class="acceso-sub">Entra con el correo y la contraseña de tu cuenta.</p>
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <div class="nota nota-ok" role="status">
+        <svg class="icono" aria-hidden="true"><use href="#i-check" /></svg>
+        <span>@mensaje</span>
+    </div>
+}
+
+<form class="formulario" asp-controller="Cuenta" asp-action="Login" method="post" novalidate>
+    <div asp-validation-summary="ModelOnly" class="resumen-error"></div>
+
+    <div class="campo">
+        <label asp-for="Correo">Correo electrónico</label>
+        <input asp-for="Correo" placeholder="tu@correo.com" autocomplete="username" autofocus />
+        <span asp-validation-for="Correo" class="campo-error"></span>
+    </div>
+
+    <div class="campo">
+        <label asp-for="Clave">Contraseña</label>
+        <div class="campo-clave">
+            <input asp-for="Clave" autocomplete="current-password" />
+            <button type="button" class="ver-clave" data-ver-clave aria-pressed="false">
+                <svg class="icono" aria-hidden="true"><use href="#i-ojo" /></svg>
+                <span class="sr">Mostrar contraseña</span>
+            </button>
+        </div>
+        <span asp-validation-for="Clave" class="campo-error"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primario btn-bloque" data-enviando="Entrando…">Iniciar sesión</button>
+</form>
+
+<p class="acceso-alterno">
+    ¿Primera vez en el portal?
+    <a asp-controller="Cuenta" asp-action="Registro">Crea tu cuenta</a>
+</p>
+
+@if (esDemo)
+{
+    <p class="nota nota-demo">
+        <svg class="icono" aria-hidden="true"><use href="#i-info" /></svg>
+        <span>Modo demo. Cuenta de prueba: <strong>paciente&#64;correo.com</strong> con la contraseña <strong>123456</strong>, o crea una nueva.</span>
+    </p>
+}

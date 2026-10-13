@@ -1,0 +1,98 @@
+@model ConstanciaDto
+@{
+    Layout = "_LayoutPaciente";
+    ViewData["Title"] = Model.Titulo;
+
+    var cancelada = Model.Tipo == TiposConstancia.CitaCancelada;
+}
+
+<div class="no-imprimir">
+    <a asp-controller="Constancias" asp-action="Index" class="volver">
+        <svg class="icono" aria-hidden="true"><use href="#i-atras" /></svg>
+        Mis constancias
+    </a>
+
+    <div class="cabecera">
+        <div>
+            <h1 class="titulo-pagina">@Model.Titulo</h1>
+            <p class="bajada">Guárdala como prueba de lo que hiciste. Siempre la vas a encontrar en "Mis constancias".</p>
+        </div>
+        <div class="comprobante-acciones">
+            <a asp-controller="Constancias" asp-action="Pdf" asp-route-id="@Model.Id" class="btn btn-primario" download>
+                <svg class="icono" aria-hidden="true"><use href="#i-descargar" /></svg>
+                Descargar PDF
+            </a>
+            <button type="button" class="btn btn-secundario" onclick="window.print()">
+                <svg class="icono" aria-hidden="true"><use href="#i-imprimir" /></svg>
+                Imprimir
+            </button>
+        </div>
+    </div>
+</div>
+
+<article class="recibo">
+    <header class="recibo-cabeza">
+        <div class="marca">
+            <svg class="marca-lazo" aria-hidden="true"><use href="#i-lazo" /></svg>
+            <span class="marca-texto">
+                <strong>CONAVIHSIDA</strong>
+                <span>Consejo Nacional para el VIH y el SIDA</span>
+            </span>
+        </div>
+        <span class="recibo-sello @(cancelada ? "recibo-sello-neutro" : "")" aria-hidden="true">
+            <svg class="icono"><use href="@(cancelada ? "#i-cerrar" : "#i-check")" /></svg>
+        </span>
+        <h2>@Model.Titulo</h2>
+        <p class="recibo-descripcion">@Model.Descripcion</p>
+    </header>
+
+    <div class="recibo-numeros">
+        <div>
+            <span class="recibo-etiqueta">Número de constancia</span>
+            <span class="recibo-valor">@Model.Numero</span>
+        </div>
+        <div>
+            <span class="recibo-etiqueta">Emitida el</span>
+            <span class="recibo-valor">@Model.FechaEmision.ToString("d 'de' MMMM yyyy, h:mm tt")</span>
+        </div>
+    </div>
+
+    <table class="recibo-tabla">
+        <tr>
+            <th scope="row">Paciente</th>
+            <td>@Model.NombrePaciente</td>
+        </tr>
+        @foreach (var detalle in Model.Detalles)
+        {
+            <tr>
+                <th scope="row">@detalle.Etiqueta</th>
+                <td>@detalle.Valor</td>
+            </tr>
+        }
+    </table>
+
+    <p class="recibo-legal">
+        Esta constancia sirve como prueba de la solicitud realizada en el Portal del paciente.
+        Conforme a la Ley No. 135-11 y la Ley No. 172-13, la información de este documento es confidencial
+        y no contiene información clínica. CONAVIHSIDA, República Dominicana.
+    </p>
+</article>
+
+<div class="siguiente no-imprimir">
+    @switch (Model.Tipo)
+    {
+        case TiposConstancia.RegistroCuenta:
+            <a asp-controller="Inicio" asp-action="Index" class="btn btn-primario">Ir a mi portal</a>
+            break;
+        case TiposConstancia.CitaAgendada:
+        case TiposConstancia.CitaCancelada:
+            <a asp-controller="Citas" asp-action="Index" class="btn btn-secundario">Ver mis citas</a>
+            break;
+        case TiposConstancia.PagoRealizado:
+            if (Model.ReferenciaId is int facturaId)
+            {
+                <a asp-controller="Facturas" asp-action="Comprobante" asp-route-id="@facturaId" class="btn btn-secundario">Ver recibo y factura</a>
+            }
+            break;
+    }
+</div>

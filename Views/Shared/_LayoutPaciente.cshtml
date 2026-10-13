@@ -1,0 +1,111 @@
+@{
+    var controlador = ViewContext.RouteData.Values["controller"]?.ToString();
+    var nombre = (ViewBag.NombrePaciente as string) ?? "Paciente";
+    var partesNombre = nombre.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+    var iniciales = string.Concat(partesNombre.Take(2).Select(p => char.ToUpperInvariant(p[0])));
+    var mensaje = (ViewBag.Mensaje as string) ?? (TempData["Mensaje"] as string);
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] · Portal del paciente CONAVIHSIDA</title>
+    <script>document.documentElement.classList.add("js");</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght%4012..96,500..800&family=Figtree:wght%40400..700&display=swap" />
+    <link rel="stylesheet" href="~/css/portal.css" asp-append-version="true" />
+</head>
+<body class="app">
+    <partial name="_Iconos" />
+    <a class="saltar" href="#contenido">Saltar al contenido</a>
+
+    <header class="barra" data-barra>
+        <div class="barra-interior">
+            <a class="marca" asp-controller="Inicio" asp-action="Index">
+                <svg class="marca-lazo" aria-hidden="true"><use href="#i-lazo" /></svg>
+                <span class="marca-texto">
+                    <strong>CONAVIHSIDA</strong>
+                    <span>Portal del paciente</span>
+                </span>
+            </a>
+
+            <button type="button" class="barra-menu" aria-expanded="false" aria-controls="barra-panel" data-menu>
+                <svg class="icono" aria-hidden="true"><use href="#i-menu" /></svg>
+                <span class="sr">Abrir menú</span>
+            </button>
+
+            <div class="barra-panel" id="barra-panel">
+                <nav class="nav" aria-label="Principal">
+                    <a asp-controller="Inicio" asp-action="Index" aria-current="@(controlador == "Inicio" ? "page" : null)">
+                        <svg class="icono" aria-hidden="true"><use href="#i-inicio" /></svg> Inicio
+                    </a>
+                    <a asp-controller="Citas" asp-action="Index" aria-current="@(controlador == "Citas" ? "page" : null)">
+                        <svg class="icono" aria-hidden="true"><use href="#i-calendario" /></svg> Mis citas
+                    </a>
+                    <a asp-controller="Resultados" asp-action="Index" aria-current="@(controlador == "Resultados" ? "page" : null)">
+                        <svg class="icono" aria-hidden="true"><use href="#i-matraz" /></svg> Resultados
+                    </a>
+                    <a asp-controller="Facturas" asp-action="Index" aria-current="@(controlador == "Facturas" ? "page" : null)">
+                        <svg class="icono" aria-hidden="true"><use href="#i-factura" /></svg> Facturas
+                    </a>
+                    <a asp-controller="Constancias" asp-action="Index" aria-current="@(controlador == "Constancias" ? "page" : null)">
+                        <svg class="icono" aria-hidden="true"><use href="#i-documento" /></svg> Constancias
+                    </a>
+                </nav>
+
+                <div class="usuario">
+                    <span class="avatar" aria-hidden="true">@iniciales</span>
+                    <span class="usuario-nombre">@nombre</span>
+                    <a class="usuario-salir" asp-controller="Cuenta" asp-action="Salir">
+                        <svg class="icono" aria-hidden="true"><use href="#i-salir" /></svg>
+                        Salir
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main id="contenido" class="contenido">
+        @RenderBody()
+    </main>
+
+    <footer class="pie">
+        <div class="pie-interior">
+            <p>
+                <svg class="icono" aria-hidden="true"><use href="#i-escudo" /></svg>
+                Tu información está protegida por la Ley 135-11 sobre VIH/SIDA y la Ley 172-13 de protección de datos personales.
+            </p>
+            <p class="pie-secundario">CONAVIHSIDA, Consejo Nacional para el VIH y el SIDA, República Dominicana. Proyecto académico de Desarrollo de Software III.</p>
+        </div>
+    </footer>
+
+    @if (!string.IsNullOrEmpty(mensaje))
+    {
+        <div class="aviso" role="status" data-aviso>
+            <svg class="icono" aria-hidden="true"><use href="#i-check" /></svg>
+            <p>@mensaje</p>
+            <button type="button" class="aviso-cerrar" data-aviso-cerrar>
+                <svg class="icono" aria-hidden="true"><use href="#i-cerrar" /></svg>
+                <span class="sr">Cerrar aviso</span>
+            </button>
+        </div>
+    }
+
+    <dialog class="dialogo" id="dialogo-confirmar" aria-labelledby="dialogo-titulo">
+        <form method="dialog">
+            <span class="dialogo-icono" aria-hidden="true"><svg class="icono"><use href="#i-alerta" /></svg></span>
+            <h2 id="dialogo-titulo" data-dialogo-titulo>¿Seguro?</h2>
+            <p data-dialogo-texto></p>
+            <div class="dialogo-acciones">
+                <button type="submit" value="no" class="btn btn-secundario">No, volver</button>
+                <button type="submit" value="si" class="btn btn-peligro" data-dialogo-aceptar>Sí, continuar</button>
+            </div>
+        </form>
+    </dialog>
+
+    <script src="~/js/portal.js" asp-append-version="true"></script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>
