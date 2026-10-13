@@ -52,7 +52,21 @@
         try {
             const url = `${urlHorarios}?medicoId=${encodeURIComponent(medico.value)}&fecha=${encodeURIComponent(fecha.value)}`;
             const respuesta = await fetch(url, { headers: { Accept: "application/json" } });
-            if (!respuesta.ok) throw new Error("HTTP " + respuesta.status);
+
+            // Sesión vencida: el servidor ya la cerró; al recargar, la página
+            // lleva al login con el aviso "Tu sesión venció".
+            if (respuesta.status === 401) {
+                window.location.reload();
+                return;
+            }
+            if (!respuesta.ok) {
+                // El servidor manda { error } con el motivo (ej. el sistema no responde).
+                let motivo = "";
+                try { motivo = (await respuesta.json()).error || ""; } catch (_) { /* sin cuerpo */ }
+                if (idPeticion !== peticionActual) return;
+                pista(motivo || "No se pudieron cargar las horas. Intenta de nuevo en unos minutos.");
+                return;
+            }
             const horarios = await respuesta.json();
 
             // Si la persona cambió de médico o día mientras esto cargaba,

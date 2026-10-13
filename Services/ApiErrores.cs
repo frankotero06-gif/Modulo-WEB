@@ -19,6 +19,16 @@ internal static class ApiErrores
             return "Tu sesión no está autorizada para esta operación. Inicia sesión de nuevo.";
         }
 
+        return await LeerErrorDelCuerpoAsync(respuesta) ?? porDefecto;
+    }
+
+    /// <summary>
+    /// Solo el texto de { "error": "..." } si la respuesta lo trae; si no, null.
+    /// Sirve cuando el código HTTP significa algo distinto según la ruta
+    /// (en el login, 401 es "clave incorrecta", no "sesión vencida").
+    /// </summary>
+    public static async Task<string?> LeerErrorDelCuerpoAsync(HttpResponseMessage respuesta)
+    {
         try
         {
             var cuerpo = await respuesta.Content.ReadFromJsonAsync<ErrorApi>();
@@ -29,10 +39,10 @@ internal static class ApiErrores
         }
         catch (Exception ex) when (ex is JsonException or NotSupportedException)
         {
-            // Sin cuerpo JSON: se usa el mensaje por defecto.
+            // Sin cuerpo JSON: quien llama decide el mensaje.
         }
 
-        return porDefecto;
+        return null;
     }
 
     private class ErrorApi

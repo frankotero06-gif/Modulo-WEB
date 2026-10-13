@@ -1,4 +1,3 @@
-using System.Net;
 using System.Net.Http.Json;
 using PortalCitas.Models;
 
@@ -45,35 +44,12 @@ public class ConstanciaIntegracionService : IConstanciaService
 
     public async Task<List<ConstanciaDto>> ObtenerPorPacienteAsync(string pacienteId)
     {
-        try
-        {
-            var lista = await _httpClient.GetFromJsonAsync<List<ConstanciaDto>>(
-                $"pacientes/{Uri.EscapeDataString(pacienteId)}/constancias");
-            return lista ?? new List<ConstanciaDto>();
-        }
-        catch (HttpRequestException ex)
-        {
-            _logger.LogWarning(ex, "No se pudieron cargar las constancias.");
-            return new List<ConstanciaDto>();
-        }
+        var lista = await LecturaGateway.ObtenerAsync<List<ConstanciaDto>>(
+            _httpClient, $"pacientes/{Uri.EscapeDataString(pacienteId)}/constancias");
+        return lista ?? new List<ConstanciaDto>();
     }
 
-    public async Task<ConstanciaDto?> ObtenerAsync(string pacienteId, int constanciaId)
-    {
-        try
-        {
-            var respuesta = await _httpClient.GetAsync(
-                $"pacientes/{Uri.EscapeDataString(pacienteId)}/constancias/{constanciaId}");
-            if (respuesta.StatusCode == HttpStatusCode.NotFound || !respuesta.IsSuccessStatusCode)
-            {
-                return null;
-            }
-            return await respuesta.Content.ReadFromJsonAsync<ConstanciaDto>();
-        }
-        catch (HttpRequestException ex)
-        {
-            _logger.LogWarning(ex, "No se pudo cargar la constancia {Id}.", constanciaId);
-            return null;
-        }
-    }
+    public Task<ConstanciaDto?> ObtenerAsync(string pacienteId, int constanciaId) =>
+        LecturaGateway.ObtenerAsync<ConstanciaDto>(
+            _httpClient, $"pacientes/{Uri.EscapeDataString(pacienteId)}/constancias/{constanciaId}", nullSiNoExiste: true);
 }

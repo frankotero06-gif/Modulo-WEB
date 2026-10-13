@@ -22,21 +22,21 @@ public class AgendaIntegracionService : IAgendaService
 
     public async Task<List<MedicoDto>> ObtenerMedicosAsync()
     {
-        var resultado = await _httpClient.GetFromJsonAsync<List<MedicoDto>>("medicos");
+        var resultado = await LecturaGateway.ObtenerAsync<List<MedicoDto>>(_httpClient, "medicos");
         // El CORE también devuelve médicos inactivos; el paciente no debe poder elegirlos.
         return (resultado ?? new List<MedicoDto>()).Where(m => m.Activo).ToList();
     }
 
     public async Task<List<CitaDto>> ObtenerCitasPacienteAsync(string pacienteId)
     {
-        var resultado = await _httpClient.GetFromJsonAsync<List<CitaDto>>($"pacientes/{pacienteId}/citas");
+        var resultado = await LecturaGateway.ObtenerAsync<List<CitaDto>>(_httpClient, $"pacientes/{pacienteId}/citas");
         return resultado ?? new List<CitaDto>();
     }
 
     public async Task<List<string>> ObtenerHorariosDisponiblesAsync(int medicoId, DateTime fecha)
     {
         var fechaTexto = fecha.ToString("yyyy-MM-dd");
-        var resultado = await _httpClient.GetFromJsonAsync<List<string>>($"medicos/{medicoId}/horarios?fecha={fechaTexto}");
+        var resultado = await LecturaGateway.ObtenerAsync<List<string>>(_httpClient, $"medicos/{medicoId}/horarios?fecha={fechaTexto}");
         return resultado ?? new List<string>();
     }
 

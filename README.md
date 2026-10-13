@@ -315,6 +315,32 @@ Ya está configurada según lo que confirmaron Ricardo y Emilia:
 
 El Controller y las Vistas no cambian: solo conocen las interfaces de `Services/`.
 
+### Errores del Gateway
+
+- **Login:** si el Gateway responde `{ error }` (por ejemplo, 429 por cuenta
+  bloqueada), el paciente ve ese mensaje. Solo 400/401/403/404 sin cuerpo
+  se muestran como "Correo o contraseña incorrectos".
+- **Lecturas** (médicos, horarios, citas, facturas, resultados,
+  constancias): pasan por `Services/LecturaGateway.cs`.
+  - **Token vencido o rechazado (401/403):** se cierra la sesión y el
+    paciente llega al login con el aviso "Tu sesión venció".
+  - **Gateway caído, lento o con error:** se muestra la pantalla
+    `Views/Shared/ErrorServicio.cshtml`, con el motivo y los botones
+    "Intentar de nuevo", "Ir al inicio" y "Cerrar sesión".
+  - **Horarios (Agendar, petición AJAX):** reciben JSON con `{ error }`. El
+    mensaje sale en el mismo recuadro de horas.
+- Todo esto lo maneja `PacienteControllerBase.OnActionExecuted`, así que
+  los Controllers no necesitan try/catch.
+
+### Antes de la demo
+
+1. En la máquina de la demo, corre una vez
+   `dotnet dev-certs https --trust`. Así el navegador y el portal confían en
+   el certificado HTTPS local del Gateway (`https://localhost:7107`).
+2. En el Swagger de Ricardo, confirma que existen
+   `POST /api/auth/paciente/login` y `POST /api/auth/registro`, y que las dos
+   devuelven `token`.
+
 ## Nota sobre el SRS que compartiste
 
 Reviso rápido tu `SRS_CONAVIHSIDA.docx`: incorporaste muy bien las

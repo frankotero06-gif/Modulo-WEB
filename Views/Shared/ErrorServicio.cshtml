@@ -1,0 +1,19 @@
+@model ErrorServicioViewModel
+@{
+    Layout = "_LayoutPaciente";
+    ViewData["Title"] = "No pudimos cargar esta página";
+}
+
+<div class="panel vacio error-servicio" role="alert">
+    <span class="vacio-icono error-icono"><svg class="icono" aria-hidden="true"><use href="#i-alerta" /></svg></span>
+    <h1 class="titulo-error">No pudimos cargar esta página</h1>
+    <p>@Model.Mensaje</p>
+    <div class="error-acciones">
+        @if (!string.IsNullOrEmpty(Model.UrlReintento))
+        {
+            <a href="@Model.UrlReintento" class="btn btn-primario">Intentar de nuevo</a>
+        }
+        <a asp-controller="Inicio" asp-action="Index" class="btn btn-secundario">Ir al inicio</a>
+        <a asp-controller="Cuenta" asp-action="Salir" class="btn btn-texto">Cerrar sesión</a>
+    </div>
+</div>
