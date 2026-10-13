@@ -1,8 +1,11 @@
+using System.Text.Json.Serialization;
+
 namespace PortalCitas.Models;
 
 public class CitaDto
 {
     public int Id { get; set; }
+    [JsonConverter(typeof(TextoFlexibleConverter))]
     public string PacienteId { get; set; } = string.Empty;
     public int MedicoId { get; set; }
     public string MedicoNombre { get; set; } = string.Empty;

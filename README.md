@@ -24,10 +24,16 @@ corre `dotnet build` apenas lo abras para atrapar cualquier detalle.
 dotnet run
 ```
 
-Al abrir el sitio verás la portada pública. Dale a **Iniciar sesión** y
-entra con la cuenta de prueba `paciente@correo.com` / `123456` (ya trae una
-cita, facturas y resultados cargados) o crea una cuenta nueva desde
-**"Crea tu cuenta"** en la pantalla de inicio de sesión.
+Al abrir el sitio verás la portada pública. Dale a **Iniciar sesión**.
+
+**Conectado al Gateway (configuración actual):** primero tiene que estar
+corriendo la API de Integración de Ricardo en `https://localhost:7107`.
+Paciente de prueba: `paciente2.prueba@conavihsida.test` / `Prueba.Core.2026`.
+
+**Sin el Gateway (modo demo):** en `appsettings.json` pon todos los
+`"UsarMock..."` en `true`. Entonces entra con `paciente@correo.com` /
+`123456` (ya trae una cita, facturas y resultados cargados) o crea una
+cuenta nueva desde **"Crea tu cuenta"**.
 
 ## Qué incluye
 
@@ -106,9 +112,8 @@ Cómo está hecho:
   servicios: `UsarMockConstancias` en `appsettings.json`.
 - El mock (`ConstanciaMockService`) guarda las constancias en memoria y trae
   ejemplos para el paciente de prueba.
-- Contrato asumido para Integración/Core (**pendiente de confirmar**). Lo
-  lógico es que el CORE las guarde, porque la web no tiene base de datos
-  (RNF-03):
+- Contrato con Integración/Core (**confirmado por Emilia**). Las guarda el
+  CORE, porque la web no tiene base de datos (RNF-03):
   - `POST pacientes/{pacienteId}/constancias` → 201 con `id`, `numero`,
     `fechaEmision`
   - `GET pacientes/{pacienteId}/constancias`
@@ -140,11 +145,10 @@ Antes solo existía el login; ahora el paciente puede crear su cuenta.
   (Singleton) con la contraseña en **hash PBKDF2-SHA256 con sal**, como pide
   RF-CORE-01. Rechaza correos o cédulas repetidos. El login ahora sí valida
   la contraseña (ya no entra "cualquier correo/clave").
-- **Integración** (`AutenticacionIntegracionService`): asume
-  `POST auth/registro` con
-  `{ nombres, apellidos, cedula, fechaNacimiento, telefono, correo, clave }`
-  → 201 `{ pacienteId, nombrePaciente }` o 409 `{ error }`. Hay que
-  confirmarlo con Ricardo.
+- **Integración** (`AutenticacionIntegracionService`): `POST auth/registro`
+  con `{ nombres, apellidos, cedula, fechaNacimiento, telefono, correo, clave }`
+  → 201 `{ token, pacienteId, nombrePaciente }` o 409 `{ error }`, confirmado
+  por Ricardo.
 
 ## Diseño
 
@@ -251,8 +255,9 @@ no ocultando cosas en la pantalla.
 La web llama solo al Gateway, desde el servidor (nunca desde el navegador).
 La URL base va en `IntegracionApiBaseUrl` e incluye el `/api`; las rutas de
 abajo se anexan a esa base. En cada llamada `GatewayHeadersHandler` agrega
-`X-Paciente-Id` (sin él el CORE responde 401; si no coincide con el paciente
-de la ruta o del cuerpo, 403).
+`Authorization: Bearer {token}` con el token que el Gateway entregó al
+iniciar sesión o registrarse (sin él responde 401; si el paciente no
+coincide con el de la ruta o del cuerpo, 403).
 
 | Acción | Ruta | Respuesta |
 |---|---|---|
@@ -264,7 +269,7 @@ de la ruta o del cuerpo, 403).
 | Facturas | `GET pacientes/{pacienteId}/facturas` y `.../facturas/{facturaId}` | factura(s) |
 | Pagar | `POST pacientes/{pacienteId}/facturas/{facturaId}/pagar` (`formaPago`, `referenciaPasarela`) | 200 con la factura pagada (`numeroRecibo`, `numeroFactura`, `fechaPago`), o 409 `{ error }` |
 | Resultados | `GET pacientes/{pacienteId}/resultados` | `id, pacienteId, prueba, fechaSolicitud, estado, nota` |
-| Constancias *(propuesto)* | `POST/GET pacientes/{pacienteId}/constancias`, `GET .../constancias/{id}` | constancia(s) |
+| Constancias | `POST/GET pacientes/{pacienteId}/constancias`, `GET .../constancias/{id}` | constancia(s) |
 
 Reglas: la hora es `HH:mm`; la fecha, `yyyy-MM-dd`; todo el JSON va en camelCase
 y las fechas en ISO 8601. Las citas nuevas nacen *Confirmada*; el motivo es
@@ -274,28 +279,41 @@ número de tarjeta. Si la factura es subsidiada, la forma de pago se ignora.
 
 ### Pendiente de confirmar
 
-- **Login y registro del paciente**: el CORE no los tiene. Acordado a alto
-  nivel: el Gateway (Ricardo) valida correo y contraseña y devuelve el
-  `pacienteId`. Falta su contrato real; `AutenticacionIntegracionService`
-  asume `POST auth/login` con `{ correo, clave }` y `POST auth/registro`
-  (ver arriba), ambos con respuesta `{ pacienteId, nombrePaciente }`.
+- ~~Login y registro del paciente~~ **Confirmado con Ricardo y Emilia** (ver
+  "Conexión con el Gateway").
 - **Pasarela de pago**: acordado que la simule el Gateway. Mientras tanto
   `PasarelaMockService` la simula dentro de la web.
 - **Campos exactos de la cita y de la factura** (qué nombres y tipos trae
   cada JSON). Los DTOs de la web son suposiciones hasta ver un ejemplo real.
 
-## Cómo conectar la API real de Ricardo
+## Conexión con el Gateway (Ricardo) y el CORE (Emilia)
 
-Todo vive en `Services/`, igual que en los otros dos proyectos:
+Ya está configurada según lo que confirmaron Ricardo y Emilia:
 
-1. En `appsettings.json`, cambia `"UsarMockAgenda"` a `false` (y
-   `"UsarMockAutenticacion"` cuando el login real esté listo).
-2. Pon la URL real en `"IntegracionApiBaseUrl"`.
-3. Revisa `AgendaIntegracionService.cs`: ajusta las rutas (`/medicos`,
-   `/pacientes/{id}/citas`, etc.) y los nombres de campos según lo que
-   Ricardo confirme.
+- `appsettings.json`: `IntegracionApiBaseUrl` = `https://localhost:7107/api`
+  y todos los `UsarMock...` en `false`.
+- **Login:** `POST auth/paciente/login` con `{ correo, clave }` → `{ token,
+  pacienteId, nombrePaciente }`.
+- **Registro:** `POST auth/registro` (ruta del Gateway; en el CORE es
+  `auth/paciente/registro`) → 201 `{ token, pacienteId, nombrePaciente }` o
+  409 `{ error }`. Los nombres de campo (`nombres`, `apellidos`, `cedula`,
+  `fechaNacimiento`, `telefono`, `correo`, `clave`) ya coinciden con el CORE.
+- **Token:** se guarda en la sesión del servidor (`Session["Token"]`) al
+  iniciar sesión y al registrarse, y `GatewayHeadersHandler` lo manda como
+  `Authorization: Bearer ...` en todas las llamadas. Ya no se manda
+  `X-Paciente-Id`.
+- **pacienteId:** el Gateway lo devuelve como texto y el CORE como número.
+  La web acepta las dos formas (`Models/TextoFlexibleConverter.cs`) y lo
+  maneja siempre como texto.
+- **Constancias:** `POST/GET pacientes/{pacienteId}/constancias` y
+  `GET .../constancias/{id}`, con la misma forma que `ConstanciaDto`. El
+  número, la fecha y el nombre los pone el CORE; la web muestra los que le
+  devuelve.
+- **Pagar:** el cuerpo es `{ formaPago, referenciaPasarela }`.
+- Las demás rutas (médicos, horarios, citas, facturas, resultados) son las
+  de la tabla de arriba.
 
-El Controller y las Vistas no cambian — solo conocen `IAgendaService`.
+El Controller y las Vistas no cambian: solo conocen las interfaces de `Services/`.
 
 ## Nota sobre el SRS que compartiste
 

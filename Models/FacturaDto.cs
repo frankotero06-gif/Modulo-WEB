@@ -1,8 +1,11 @@
+using System.Text.Json.Serialization;
+
 namespace PortalCitas.Models;
 
 public class FacturaDto
 {
     public int Id { get; set; }
+    [JsonConverter(typeof(TextoFlexibleConverter))]
     public string PacienteId { get; set; } = string.Empty;
     public string Concepto { get; set; } = string.Empty;
     public DateTime Fecha { get; set; }

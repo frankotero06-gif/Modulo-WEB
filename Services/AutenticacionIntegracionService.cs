@@ -1,14 +1,18 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json.Serialization;
 using PortalCitas.Models;
 
 namespace PortalCitas.Services;
 
 /// <summary>
-/// TODO cuando Ricardo confirme el contrato real:
-///   1. Ajustar las rutas "auth/login" y "auth/registro".
-///   2. Ajustar los nombres de "RespuestaAuthApi".
-///   3. Poner la URL real en appsettings.json → "IntegracionApiBaseUrl".
+/// Login y registro del paciente contra el Gateway de Integración (Ricardo):
+///   POST auth/paciente/login  { correo, clave }
+///        → 200 { token, pacienteId, nombrePaciente }
+///   POST auth/registro        { nombres, apellidos, cedula, fechaNacimiento, telefono, correo, clave }
+///        → 201 { token, pacienteId, nombrePaciente }  ó  409 { error }
+/// El token se guarda en la sesión del servidor y GatewayHeadersHandler lo
+/// manda como "Authorization: Bearer ..." en las demás llamadas.
 /// </summary>
 public class AutenticacionIntegracionService : IAutenticacionService
 {
@@ -20,7 +24,7 @@ public class AutenticacionIntegracionService : IAutenticacionService
     {
         try
         {
-            var respuesta = await _httpClient.PostAsJsonAsync("auth/login", new { correo, clave });
+            var respuesta = await _httpClient.PostAsJsonAsync("auth/paciente/login", new { correo, clave });
             if (!respuesta.IsSuccessStatusCode)
             {
                 return ResultadoLogin.Fallo("Correo o contraseña incorrectos.");
@@ -32,7 +36,7 @@ public class AutenticacionIntegracionService : IAutenticacionService
                 return ResultadoLogin.Fallo("Respuesta inesperada del servidor.");
             }
 
-            return ResultadoLogin.Ok(datos.PacienteId, datos.NombrePaciente);
+            return ResultadoLogin.Ok(datos.PacienteId, datos.NombrePaciente, datos.Token);
         }
         catch (HttpRequestException)
         {
@@ -41,11 +45,13 @@ public class AutenticacionIntegracionService : IAutenticacionService
     }
 
     /// <summary>
-    /// Contrato asumido (pendiente de confirmar con Ricardo):
+    /// Contrato confirmado por Ricardo (Gateway):
     ///   POST auth/registro
     ///   { nombres, apellidos, cedula, fechaNacimiento, telefono, correo, clave }
-    ///   201 → { pacienteId, nombrePaciente }
+    ///   201 → { token, pacienteId, nombrePaciente }
     ///   409 → { error }  (correo o cédula ya registrados)
+    /// Ojo: en el CORE la ruta es "auth/paciente/registro"; la web llama al
+    /// Gateway, y el Gateway la expone como "auth/registro".
     /// La clave viaja por HTTPS al Gateway y es el Gateway/CORE quien la
     /// guarda con hash salado; la web nunca la almacena.
     /// </summary>
@@ -84,7 +90,7 @@ public class AutenticacionIntegracionService : IAutenticacionService
                 return ResultadoRegistro.Fallo("Respuesta inesperada del servidor.");
             }
 
-            return ResultadoRegistro.Ok(datosApi.PacienteId, datosApi.NombrePaciente);
+            return ResultadoRegistro.Ok(datosApi.PacienteId, datosApi.NombrePaciente, datosApi.Token);
         }
         catch (HttpRequestException)
         {
@@ -94,7 +100,11 @@ public class AutenticacionIntegracionService : IAutenticacionService
 
     private class RespuestaAuthApi
     {
+        public string Token { get; set; } = string.Empty;
+
+        [JsonConverter(typeof(TextoFlexibleConverter))]
         public string PacienteId { get; set; } = string.Empty;
+
         public string NombrePaciente { get; set; } = string.Empty;
     }
 }

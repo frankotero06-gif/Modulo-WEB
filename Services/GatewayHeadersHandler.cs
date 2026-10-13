@@ -4,9 +4,9 @@ namespace PortalCitas.Services;
 /// Se ejecuta en CADA llamada que el servidor web hace al Gateway
 /// (HttpClient del lado del servidor, nunca desde el navegador).
 ///
-///  - Agrega X-Paciente-Id con el paciente de la sesión actual. El
-///    valor sale de la sesión del servidor, no de nada que mande el
-///    navegador.
+///  - Agrega "Authorization: Bearer {token}" con el token que el Gateway
+///    entregó al iniciar sesión o registrarse. El token vive en la sesión
+///    del servidor; nunca se envía al navegador.
 ///  - Agrega la llave del Gateway si está configurada. Vive en la
 ///    configuración del servidor (appsettings / user-secrets /
 ///    variable de entorno) y jamás se envía al navegador.
@@ -24,11 +24,11 @@ public class GatewayHeadersHandler : DelegatingHandler
 
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var pacienteId = _accessor.HttpContext?.Session.GetString("PacienteId");
-        if (!string.IsNullOrEmpty(pacienteId))
+        var token = _accessor.HttpContext?.Session.GetString("Token");
+        if (!string.IsNullOrEmpty(token))
         {
-            request.Headers.Remove("X-Paciente-Id");
-            request.Headers.Add("X-Paciente-Id", pacienteId);
+            request.Headers.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         }
 
         var apiKey = _config["IntegracionApiKey"];
