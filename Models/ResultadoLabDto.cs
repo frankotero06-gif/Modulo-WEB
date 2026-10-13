@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace PortalCitas.Models;
 
 /// <summary>
@@ -11,6 +13,7 @@ namespace PortalCitas.Models;
 public class ResultadoLabDto
 {
     public int Id { get; set; }
+    [JsonConverter(typeof(TextoFlexibleConverter))]
     public string PacienteId { get; set; } = string.Empty;
     public string Prueba { get; set; } = string.Empty;
     /// <summary>El CORE la envía como "fechaSolicitud".</summary>

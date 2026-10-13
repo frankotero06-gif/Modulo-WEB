@@ -10,9 +10,9 @@ namespace PortalCitas.Services;
 ///   GET  pacientes/{pacienteId}/citas
 ///   POST citas                                    -> 201 con la cita | 409 { error }
 ///   POST citas/{id}/cancelar?pacienteId={id}      -> 200 sin cuerpo | 404 si no es de ese paciente
-/// Todo el JSON va en camelCase, fechas ISO 8601. Sin X-Paciente-Id el CORE
-/// responde 401; si no coincide con el paciente de la ruta o del cuerpo, 403
-/// (el header lo agrega GatewayHeadersHandler).
+/// Todo el JSON va en camelCase, fechas ISO 8601. Sin el token del paciente
+/// el Gateway responde 401; si no coincide con el paciente de la ruta o del
+/// cuerpo, 403 (el header "Authorization: Bearer" lo agrega GatewayHeadersHandler).
 /// </summary>
 public class AgendaIntegracionService : IAgendaService
 {

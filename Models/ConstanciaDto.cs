@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace PortalCitas.Models;
 
 /// <summary>
@@ -15,6 +17,7 @@ public class ConstanciaDto
     /// <summary>Número visible, ej. "CON-20261013-0004".</summary>
     public string Numero { get; set; } = string.Empty;
 
+    [JsonConverter(typeof(TextoFlexibleConverter))]
     public string PacienteId { get; set; } = string.Empty;
     public string NombrePaciente { get; set; } = string.Empty;
 

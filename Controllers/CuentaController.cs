@@ -46,7 +46,7 @@ public class CuentaController : Controller
             return View(modelo);
         }
 
-        IniciarSesion(resultado.PacienteId, resultado.NombrePaciente);
+        IniciarSesion(resultado.PacienteId, resultado.NombrePaciente, resultado.Token);
         return RedirectToAction("Index", "Inicio");
     }
 
@@ -92,7 +92,7 @@ public class CuentaController : Controller
             return View(modelo);
         }
 
-        IniciarSesion(resultado.PacienteId, resultado.NombrePaciente);
+        IniciarSesion(resultado.PacienteId, resultado.NombrePaciente, resultado.Token);
         TempData["Mensaje"] = $"Tu cuenta está lista, {modelo.Nombres.Trim()}. Guarda tu constancia de registro.";
 
         // Constancia del registro, para que el paciente tenga prueba de lo que hizo.
@@ -114,9 +114,20 @@ public class CuentaController : Controller
         return RedirectToAction("Login");
     }
 
-    private void IniciarSesion(string? pacienteId, string? nombrePaciente)
+    private void IniciarSesion(string? pacienteId, string? nombrePaciente, string? token)
     {
         HttpContext.Session.SetString("PacienteId", pacienteId ?? string.Empty);
         HttpContext.Session.SetString("NombrePaciente", nombrePaciente ?? string.Empty);
+
+        // El token del Gateway queda solo en la sesión del servidor. Se guarda
+        // antes de pedir la constancia del registro, porque ese endpoint ya lo exige.
+        if (!string.IsNullOrEmpty(token))
+        {
+            HttpContext.Session.SetString("Token", token);
+        }
+        else
+        {
+            HttpContext.Session.Remove("Token");
+        }
     }
 }
