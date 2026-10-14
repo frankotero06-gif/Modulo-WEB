@@ -536,6 +536,7 @@ html:not(.js) [data-anterior] { display: none; }
 .nav a {
   position: relative;
   display: inline-flex;
+  white-space: nowrap;
   align-items: center;
   gap: 8px;
   padding: 0 14px;
@@ -572,7 +573,13 @@ html:not(.js) [data-anterior] { display: none; }
   font-size: 13px;
   letter-spacing: 0.02em;
 }
-.usuario-nombre { color: rgba(255, 255, 255, 0.9); }
+.usuario-nombre {
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 14ch; /* nombres largos no empujan el menú a dos líneas */
+}
 .usuario-salir {
   display: inline-flex;
   align-items: center;
@@ -1410,6 +1417,7 @@ html:not(.js) .pestanas { display: none; }
   .nav a[aria-current="page"]::after { transform: scaleY(1); }
   .usuario { padding-top: 14px; margin-top: 8px; border-top: 1px solid rgba(255, 255, 255, 0.12); }
   .usuario-salir { margin-left: auto; }
+  .usuario-nombre { max-width: none; }
   .pub-barra-interior { height: 64px; gap: 12px; padding: 0 16px; }
   .pub-barra .barra-menu { display: grid; }
   .pub-barra .marca-texto span { display: none; }
